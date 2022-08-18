@@ -1,22 +1,23 @@
 % ----------------------------------------------------------------------
-% Coregistration Function for MoAE dataset
+% Coregistration Function
 % ----------------------------------------------------------------------
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing
 
-% function: coregisters functional nifti images of participant 'sj'
-% input:    dir_source (path to MoAE data), sj (sub-ID)
-% output:   realigned func files written into participants' folder
+% function: coregisters functional and anatomical images
+% input: subdir (path to one participants' data in BIDS), format ('img' 
+%   or 'nii', default is nii)
+% output: files in participants' folder are coregistered
 % ----------------------------------------------------------------------
-function coreg(dir_source, sj, format)
-if nargin < 3; format = 'nii'; end 
+function coreg(subdir, format)
+
+if nargin < 2; format = 'nii'; end % default of format is nii
 
 % define the directories (BIDS format)
-subdir           = fullfile(dir_source, sj);
-subdir_func      = fullfile(dir_source, sj, 'func');
-subdir_anat      = fullfile(dir_source, sj, 'anat');
+subdir_func = fullfile(subdir, 'func');
+subdir_anat = fullfile(subdir, 'anat');
 
-%% ----- create matlab batch ----- %
+% choose filter according to file format
 if strcmp(format, 'nii') == 1 
     filt_anat = '^.*\.nii$';
     filt_func = '^mean.*\.nii$';
@@ -28,8 +29,11 @@ else
     error(message)
 end 
 
+%% ----- create matlab batch ----- %
+% SPM filter to select mean func file
 [reference] = spm_select('ExtFPList', subdir_func, filt_func); % mean image
 reference = cellstr(reference); 
+% test if mean image found
 if isempty(reference) == 1 
    message = 'No mean image found.'; 
    error(message)
@@ -38,13 +42,16 @@ elseif numel(reference) > 1
     reference = reference{1, 1}; 
 end 
 
+% SPM filter to select anat file
 [source] = spm_select('ExtFPList', subdir_anat, filt_anat); % anat image
 source = cellstr(source); 
+% test if anat file found
 if isempty(source) == 1 
     message = 'No anatomical image found.'; 
     error(message)
 end 
 
+% matlab coregistration batch
 matlabbatch{1}.spm.spatial.coreg.estimate.ref = reference;
 matlabbatch{1}.spm.spatial.coreg.estimate.source = source; 
 matlabbatch{1}.spm.spatial.coreg.estimate.other = {''};
@@ -54,8 +61,8 @@ matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = ...
     [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
 
-%% ----- save & run batch -----
 
+%% ----- save & run batch -----
 batchname = strcat(subdir,'_coregister.mat');
 save(batchname, 'matlabbatch');
 

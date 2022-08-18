@@ -36,9 +36,9 @@ elseif user == 'n'
     dir_spm         = '/Applications/MATLAB_R2021b.app/toolbox/spm12/tpm';
     disp('Hi Neele!')
 elseif user == 'g'
-    dir_analysis    = '[fill in path to analysis code]'; 
-    dir_source      = '[fill in path to data]';
-    dir_spm         = '[fill in spm/tpm path]';
+    dir_analysis    = '[fill in your path to analysis code]'; 
+    dir_source      = '[fill in your path to data]';
+    dir_spm         = '[fill in your spm/tpm path]';
     disp('Welcome!')
 else
     message = ['Code must be ''a'', ''n'', or ''g'' depending on which ' ...
@@ -46,6 +46,7 @@ else
     error(message)
 end
 
+cd(dir_analysis)
 
 %% ----- Initialise sub-IDs ----- %
 % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -55,10 +56,10 @@ N       = numel(SJs); % number of participants
 
 
 %% ----- Preprocessing For-Loop ----- %
-
-% loops over participants 'subject' in SJs and performs preprocessing steps
+% loops over 'subjects' in SJs and performs preprocessing steps
 for subject = 1:N
-    subdir = fullfile(subdir);
+    % initialise participants' subdirectory
+    subdir = fullfile(dir_source, SJs{subject});
 
     % ---- Realignment ----- %
     % function realigns functional images
@@ -66,34 +67,37 @@ for subject = 1:N
 
     % ---- Coregistration ----- %
     % function coregisters functional and anatomical images
-    coreg(dir_source, SJs{subject})
+    coreg(subdir)
     
     % ---- Segmentation ----- %
     % function segments T1w image of participant
-    segment(dir_source, dir_spm, SJs{subject})
+    segment(subdir, dir_spm)
 
     % ---- Normalise ----- %
     % function normalises functional (& per default anatomical) images
-    normalise(dir_source, SJs{subject})
+    normalise(subdir)
 
     % ----- Smoothing ----- %
     % function smoothes functional images with a FWHM of 6mm
-    smooth(dir_source, SJs{subject})
+    smooth(subdir)
 
 end
 
 
 %% ----- First Level Analysis For-Loop ----- %
-
+% loops over 'subjects' in SJs and performs first level analysis
 for subject = 1:N
+    % initialise participants' subdirectory
+    subdir = fullfile(dir_source, SJs{subject});
+
     % ----- Specify ----- %
     % function specifies first level Design Matrix (SPM.mat) according to 
     % spm12 manual instructions 
-    spec_first(dir_source, SJs{subject})
+    spec_first(subdir)
 
     % ----- Estimate ----- %
     % function estimates formerly specified first level model (SPM.mat)
-    est_first(dir_source, SJs{subject})
+    est_first(subdir)
 end
 
 

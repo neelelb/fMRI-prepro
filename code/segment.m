@@ -1,21 +1,20 @@
 % ----------------------------------------------------------------------
-% Segmentation Function for MoAE dataset
+% Segmentation Function
 % ----------------------------------------------------------------------
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing
 
-% function: segments anatomical images of participant 'sj'
-% input:    dir_source (path to MoAE data), dir_spm (path to tpm folder in 
-% spm), sj (sub-ID), format ('img' or 'nii', default is nii)
-% output:   segmented anat files written into participants' folder
+% function: segments anatomical images of one participant
+% input: subdir (path to one participants' data in BIDS), dir_spm (path 
+%   to tpm folder in spm), format ('img' or 'nii', default is nii)
+% output: segmented T1 and deformation field files in participants' folder
 % ----------------------------------------------------------------------
-function segment(dir_source, dir_spm, sj, format)
+function segment(subdir, dir_spm, format)
 
-if nargin < 4; format = 'nii'; end % default of format is nii
+if nargin < 3; format = 'nii'; end % default of format is nii
 
 % define anatomical directories
-subdir = fullfile(dir_source, sj);
-subdir_anat     = fullfile(dir_source, sj, 'anat');
+subdir_anat = fullfile(subdir, 'anat');
 
 % select filter according to image format based on BIDS file naming
 if strcmp(format, 'nii') == 1 
@@ -29,8 +28,8 @@ end
 
 %% ----- create matlab batch ----- %
 % SPM filter to select all func files
-[t1]            = spm_select('ExtFPList', subdir_anat, filt); % select all
-t1              = cellstr(t1); 
+[t1]    = spm_select('ExtFPList', subdir_anat, filt);
+t1      = cellstr(t1); 
 
 % matlab segmentation batch
 matlabbatch{1}.spm.spatial.preproc.channel.vols     = t1;

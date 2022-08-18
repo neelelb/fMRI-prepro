@@ -1,13 +1,13 @@
 % ----------------------------------------------------------------------
-% Realignment Function for MoAE dataset
+% Realignment Function
 % ----------------------------------------------------------------------
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing
 
-% function: realigns functional nifti images of participant 'sj'
-% input:    dir_source (path to MoAE data), sj (sub-ID), nruns (as
-% integer), format as string ('img' or 'nii', default is nii)
-% output:   realigned func files written into participants' folder
+% function: realigns functional images of one participant
+% input: subdir (path to one participants' data in BIDS), nruns (as
+%   integer), format ('img' or 'nii', default is nii)
+% output: realigned func files written into participants' folder
 % ----------------------------------------------------------------------
 function realign(subdir, nruns, format)
 
@@ -15,7 +15,7 @@ if nargin < 2; nruns = 1; end       % default of nrun is 1
 if nargin < 3; format = 'nii'; end  % default of format is nii
 
 % define the functional directory (BIDS format)
-subdir_func      = fullfile(subdir, 'func');
+subdir_func = fullfile(subdir, 'func');
 
 
 %% ----- create matlab batch ----- %

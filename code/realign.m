@@ -9,14 +9,13 @@
 % integer), format as string ('img' or 'nii', default is nii)
 % output:   realigned func files written into participants' folder
 % ----------------------------------------------------------------------
-function realign(dir_source, sj, nruns, format)
+function realign(subdir, nruns, format)
 
-if nargin < 3; nruns = 1; end       % default of nrun is 1
-if nargin < 4; format = 'nii'; end  % default of format is nii
+if nargin < 2; nruns = 1; end       % default of nrun is 1
+if nargin < 3; format = 'nii'; end  % default of format is nii
 
 % define the functional directory (BIDS format)
-subdir           = fullfile(dir_source, sj);
-subdir_func      = fullfile(dir_source, sj, 'func');
+subdir_func      = fullfile(subdir, 'func');
 
 
 %% ----- create matlab batch ----- %

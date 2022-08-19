@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% FINAL ASSIGNMENT - Automatization of data processing (SPM12 manual)
+% FINAL ASSIGNMENT - Automatization of data processing
 % ----------------------------------------------------------------------
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI 
@@ -18,26 +18,46 @@ clear; close all; clc
 
 %% ----- Initialise User's Paths ----- %
 
-% !PLEASE NOTE!: if you are a guest (aka Timo) and you want to make this run on your 
+% !PLEASE NOTE!: if you are a guest and you want to make this run on your 
 % device, please fill in your respective paths under user == 'g'. The
 % dir_spm directory needs to point to the "tpm" folder in your spm12
 % folder.
 
 user = input(['Insert ''a'' if you are Alex, ''n'' if you are Neele, ' ...
     'and ''g'' if you are a guest: '], 's');
+
+experiment = input(['Insert ''m'' if you want to analyse the data from ' ...
+    'the SPM tutorial, insert ''h'' if you want to analyse the data from ' ...
+    'the imagery experiment. '], 's');
+
 if user == 'a'
     dir_analysis    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/code';
-    dir_source      = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/MoAEpilot';
+    if experiment == 'm' 
+       dir_source = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/MoAEpilot';
+    elseif experiment == 'h'
+       dir_source = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/experiment';
+       dir_dcm    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/NCM-II Homework Dataset';
+    end
     dir_spm         = '/Users/AlexanderLenders/Documents/MATLAB/spm12/tpm';
-    disp('Hi Alex')
+    disp('Hi Alex!')
 elseif user == 'n'
     dir_analysis    = '/Users/neele/Documents/github/fMRI-prepro/code'; 
-    dir_source      = '/Users/neele/Documents/github/fMRI-prepro/data/MoAE';
+    if experiment == 'm'
+       dir_source = '/Users/neele/Documents/github/fMRI-prepro/data/MoAE';
+    elseif experiment == 'h'
+       % dir_source = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/experiment';
+       % dir_dcm    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/NCM-II Homework Dataset';
+    end
     dir_spm         = '/Applications/MATLAB_R2021b.app/toolbox/spm12/tpm';
     disp('Hi Neele!')
 elseif user == 'g'
     dir_analysis    = '[fill in your path to analysis code]'; 
-    dir_source      = '[fill in your path to data]';
+    if experiment == 'm'
+        dir_source = '[fill in your path to data]';
+    elseif experiment == 'h'
+       dir_source  = '[fill in your path to data]';
+       dir_dcm     = '[fill in your path to data]';
+    end
     dir_spm         = '[fill in your spm/tpm path]';
     disp('Welcome!')
 else
@@ -47,6 +67,23 @@ else
 end
 
 cd(dir_analysis)
+
+if experiment == 'h'
+    %% ----- Parameters ----- %
+    nruns = 6; 
+    %% ----- Import DICOM files and create BID folder structure ----- %
+    % import DICOM files, convert them into .nii and create a BID format
+    % folder structure
+    SJs     = {dir(fullfile(dir_dcm, 'ccnb*')).name}'; % array with sub-IDs
+    N       = numel(SJs); % number of participants
+
+    for nsubject = 1:N
+        sub = SJs{nsubject, 1}; 
+        import_bids(dir_dcm, dir_source, sub, nsubject);
+    end
+elseif experiment == 'm'
+    nruns = 1;
+end
 
 %% ----- Initialise sub-IDs ----- %
 % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -63,7 +100,7 @@ for subject = 1:N
 
     % ---- Realignment ----- %
     % function realigns functional images
-    realign(subdir)
+    realign(subdir, nruns)
 
     % ---- Coregistration ----- %
     % function coregisters functional and anatomical images

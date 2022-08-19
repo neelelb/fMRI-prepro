@@ -29,13 +29,13 @@ for run = 1:nruns
         if nruns == 1
             filt = '^.*\.nii$';
         else 
-            filt = strcat('^.*',sprintf('run-%02d',run),'*\.nii$');
+            filt = strcat('^*',sprintf('run-%02d',run),'.*');
         end
     elseif strcmp(format, 'img') == 1 
         if nruns == 1
-            filt = '^.*\.nii$';
+            filt = '^.*\.img$';
         else
-            filt = strcat('^.*run-',num2str(run),'*\.img$');
+            filt = strcat('^*',sprintf('run-%02d',run),'.*');
         end
     else 
         message = 'Wrong specified file format. See input arguments.'; 

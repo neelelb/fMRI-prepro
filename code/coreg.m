@@ -38,7 +38,7 @@ if isempty(reference) == 1
    message = 'No mean image found.'; 
    error(message)
 elseif numel(reference) > 1
-    disp('More than one mean image found. Using the mean image of run 1.')
+    disp('More than one mean image found. Using the first mean image.')
     reference = reference{1, 1}; 
 end 
 

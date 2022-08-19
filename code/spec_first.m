@@ -9,10 +9,11 @@
 % input: subdir (path to one participants' data in BIDS)
 % output: SPM.mat file written into participants' stats folder
 % ----------------------------------------------------------------------
-function spec_first(subdir, nruns, format)
+function spec_first(subdir, nruns, time, format)
 
 if nargin < 2; nruns = 1; end       % default of nrun is 1
-if nargin < 3; format = 'nii'; end  % default of format is nii
+if nargin < 3; time = 'seconds'; end  % default of time format is seconds
+if nargin < 4; format = 'nii'; end  % default of format is nii
 
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');
@@ -28,7 +29,7 @@ end
 
 % matlab first function specification batch
 matlabbatch{1}.spm.stats.fmri_spec.dir              = {dir_stats};
-matlabbatch{1}.spm.stats.fmri_spec.timing.units     = 'scans';
+matlabbatch{1}.spm.stats.fmri_spec.timing.units     = time;
 matlabbatch{1}.spm.stats.fmri_spec.timing.RT        = 7;
 matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t    = 16;
 matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0   = 8;

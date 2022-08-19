@@ -12,50 +12,65 @@
 %   or 'nii', default is nii)
 % output: normalized func files (and anat file) in participants' folder
 % ----------------------------------------------------------------------
-function normalise(subdir, anatomical, format)
+function normalise(subdir, nruns, anatomical, format)
 
-if nargin < 2; anatomical = 1; end % default of anatomical is 1
-if nargin < 3; format = 'nii'; end % default of format is nii
+if nargin < 2; nruns = 1; end      % default of nrun is 1
+if nargin < 3; anatomical = 1; end % default of anatomical is 1
+if nargin < 4; format = 'nii'; end % default of format is nii
 
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');
 subdir_anat = fullfile(subdir, 'anat');
 
-% choose filter according to file format
+%% ----- create matlab batch ----- %
 if strcmp(format, 'nii') == 1 
     filt_anat = '^y.*\.nii$';
     filt_anat_manat = '^m.*\.nii$';
-    filt_func = '^r.*\.nii$';
-elseif strcmp(format, 'img') == 1 
+elseif strcmp(format, 'img') == 1
     filt_anat = '^y.*\.img$';
     filt_anat_manat = '^m.*\.img$';
-    filt_func = strcat('^r.*\.img$');
 else 
     message = 'Wrong specified file format. See input arguments.'; 
     error(message)
-end
-
-%% ----- create matlab batch ----- %
-% SPM filter to select realigned func files
-[files] = spm_select('ExtFPList', subdir_func, filt_func); 
-files = cellstr(files); 
-% test if files found
-if isempty(files) == 1 
-    message = 'No files found. Realigned the files.'; 
-    error(message)
-else 
-    matlabbatch{1}.spm.spatial.normalise.write.subj.resample = files;
 end 
 
 % SPM filter to select deformation field file
 [deformation_field] = spm_select('FPList', subdir_anat, filt_anat); 
 deformation_field = cellstr(deformation_field); 
-% test if file found
-if isempty(deformation_field) == 1 
-    message = 'No deformation field found.'; 
+
+for run = 1:nruns 
+    if strcmp(format, 'nii') == 1 && nruns == 1
+       filt_func = '^r.*\.nii$';
+    elseif strcmp(format, 'nii') == 1 && nruns ~= 1
+       filt_func = strcat('^r.*',sprintf('run-%02d',run));
+    elseif strcmp(format, 'img') == 1 && nruns == 1 
+       filt_func = '^r.*\.img$';
+    elseif strcmp(format, 'img') == 1 && nruns ~= 1 
+       filt_func = strcat('^r.*',sprintf('run-%02d',run));
+    else 
+    message = 'Wrong specified file format. See input arguments.'; 
     error(message)
-else 
-    matlabbatch{1}.spm.spatial.normalise.write.subj.def = deformation_field;
+    end
+
+    % SPM filter to select all func files
+    [files] = spm_select('ExtFPList', subdir_func, filt_func);
+    files = cellstr(files); 
+    files = cellstr(files); 
+    % test if files found
+    if isempty(files) == 1 
+        message = 'No files found. Realigned the files?'; 
+        error(message)
+    else 
+        matlabbatch{1}.spm.spatial.normalise.write.subj(run).resample = files;
+    end 
+    % test if file found
+    if isempty(deformation_field) == 1 
+        message = 'No deformation field found.'; 
+        error(message)
+    else
+        matlabbatch{1}.spm.spatial.normalise.write.subj(run).def = ...
+            deformation_field;
+    end
 end 
 
 % matlab normalization batch to normalize func data

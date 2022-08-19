@@ -71,6 +71,7 @@ cd(dir_analysis)
 if experiment == 'h'
     %% ----- Parameters ----- %
     nruns = 6; 
+    time = 'seconds'; 
     %% ----- Import DICOM files and create BID folder structure ----- %
     % import DICOM files, convert them into .nii and create a BID format
     % folder structure
@@ -83,6 +84,7 @@ if experiment == 'h'
     end
 elseif experiment == 'm'
     nruns = 1;
+    time = 'scans'; 
 end
 
 %% ----- Initialise sub-IDs ----- %
@@ -112,7 +114,7 @@ for subject = 1:N
 
     % ---- Normalise ----- %
     % function normalises functional (& per default anatomical) images
-    normalise(subdir)
+    normalise(subdir, nruns)
 
     % ----- Smoothing ----- %
     % function smoothes functional images with a FWHM of 6mm
@@ -130,7 +132,7 @@ for subject = 1:N
     % ----- Specify ----- %
     % function specifies first level Design Matrix (SPM.mat) according to 
     % spm12 manual instructions 
-    spec_first(subdir)
+    spec_first(subdir, nruns, time)
 
     % ----- Estimate ----- %
     % function estimates formerly specified first level model (SPM.mat)

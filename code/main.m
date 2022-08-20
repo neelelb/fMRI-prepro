@@ -88,8 +88,8 @@ if exp == 'h'
         subdir = fullfile(dir_source, SJs{subject});
         movefile(olddir, subdir, 'f')
 
-        % convert dicoms to nifti images
-        import_bids(newdir, SJs{subject});
+        % convert dicoms to nifti images & create BIDS structure
+        import_bids(subdir, SJs{subject});
     end
    
 % for Tactile Imagery Experiment...
@@ -113,57 +113,57 @@ end
 
 %% ----- Preprocessing For-Loop ----- %
 % loops over 'subjects' in SJs and performs preprocessing steps
-for subject = 1:N
-    % initialise participants' subdirectory
-    subdir = fullfile(dir_source, SJs{subject});
-
-    % ---- Realignment ----- %
-    % function realigns functional images
-    realign(subdir, nruns)
-
-    % ---- Coregistration ----- %
-    % function coregisters functional and anatomical images
-    coreg(subdir)
-    
-    % ---- Segmentation ----- %
-    % function segments T1w image of participant
-    segment(subdir, dir_spm)
-
-    % ---- Normalise ----- %
-    % function normalises functional (& per default anatomical) images
-    normalise(subdir, nruns)
-
-    % ----- Smoothing ----- %
-    % function smoothes functional images with a FWHM of 6mm
-    smooth(subdir, fwhm, nruns)
-
-end
-
-
-
-%% ----- First Level Analysis For-Loop ----- %
-% loops over 'subjects' in SJs and performs first level analysis
-for subject = 1:N
-    % initialise participants' subdirectory
-    subdir = fullfile(dir_source, SJs{subject});
-
-    % ----- Create onsets ----- %
-    % 
-    if experiment == h
-        create_onset(subdir, nruns, 2, time)
-    elseif experiment == m 
-        onset ...
-    end 
-
-    % ----- Specify ----- %
-    % function specifies first level Design Matrix (SPM.mat) according to 
-    % spm12 manual instructions 
-    spec_first_v2(subdir, nruns, 2, time)
-
-    % ----- Estimate ----- %
-    % function estimates formerly specified first level model (SPM.mat)
-    est_first(subdir)
-end
+% for subject = 1:N
+%     % initialise participants' subdirectory
+%     subdir = fullfile(dir_source, SJs{subject});
+% 
+%     % ---- Realignment ----- %
+%     % function realigns functional images
+%     realign(subdir, nruns)
+% 
+%     % ---- Coregistration ----- %
+%     % function coregisters functional and anatomical images
+%     coreg(subdir)
+%     
+%     % ---- Segmentation ----- %
+%     % function segments T1w image of participant
+%     segment(subdir, dir_spm)
+% 
+%     % ---- Normalise ----- %
+%     % function normalises functional (& per default anatomical) images
+%     normalise(subdir, nruns)
+% 
+%     % ----- Smoothing ----- %
+%     % function smoothes functional images with a FWHM of 6mm
+%     smooth(subdir, fwhm, nruns)
+% 
+% end
+% 
+% 
+% 
+% %% ----- First Level Analysis For-Loop ----- %
+% % loops over 'subjects' in SJs and performs first level analysis
+% for subject = 1:N
+%     % initialise participants' subdirectory
+%     subdir = fullfile(dir_source, SJs{subject});
+% 
+%     % ----- Create onsets ----- %
+%     % 
+%     if experiment == h
+%         create_onset(subdir, nruns, 2, time)
+%     elseif experiment == m 
+%         onset ...
+%     end 
+% 
+%     % ----- Specify ----- %
+%     % function specifies first level Design Matrix (SPM.mat) according to 
+%     % spm12 manual instructions 
+%     spec_first_v2(subdir, nruns, 2, time)
+% 
+%     % ----- Estimate ----- %
+%     % function estimates formerly specified first level model (SPM.mat)
+%     est_first(subdir)
+% end
 
 
 

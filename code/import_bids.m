@@ -4,35 +4,29 @@
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing
 
-% function: imports data in DICOM format and converts them into .nii files
-% in BIDS folder structure
-% input: 
-% output: 
+% 1) function: this is a workaround which imports DICOM files with SPM 12, converts 
+% the files into .nii-format and creates a BIDS folder structure. 
+% 2) Before: dicom files of subject are floating in subdir, logfiles are in
+% parent-directory
+% 3) Input: subdir (path to one participants' data), subject (sub-xx)
+% 4) Output: this script
+%   4.1) generates folder in subdir similar to bids structure (anat, func)
+%   4.2) converts dcm to nii and structures files into anat & func,
+%       while accounting for different runs and merging func files to 4D
+%       nii images.
+%   4.3) moves the log files lying in parent-dir to subdir/func
+%   Note: no .json files are created.
 % ----------------------------------------------------------------------
 function import_bids(subdir, subject) 
 
-% This is a workaround which imports DICOM files with SPM 12, converts 
-% the files into .nii-format and creates a BIDS folder structure. Note
-% however, that no .json files are created. Furthermore, log-files have
-% to be moved manually to the func folders.
-
-% currently the dicom files are floating in newfolder
-% this script 
-% 1) generates folder in newdir similar to bids structure (log, anat, func)
-% 2) moves the log files lying one level above newdir
-% 3) converts dicoms to nifti files and structures them into the folders
-
-
-%% Create BIDS folder structure
+%% ----- Create BIDS Folder Structure ----- % 
 
 % create new directories (sub-xx/...) if they do not exist already
 dir_anat    = fullfile(subdir, 'anat');
 dir_func    = fullfile(subdir, 'func');
-dir_log     = fullfile(subdir, 'log');
 dir_dicom   = fullfile(subdir, 'dicom');
 if not(isfolder(dir_anat));  mkdir(dir_anat);   end
 if not(isfolder(dir_func));  mkdir(dir_func);   end
-if not(isfolder(dir_log));   mkdir(dir_log);    end
 if not(isfolder(dir_dicom)); mkdir(dir_dicom);  end
 
 % move dicom files into dicom folder
@@ -41,124 +35,128 @@ for f = 1:numel(dicom_files)
   movefile(fullfile(subdir, dicom_files{f}), dir_dicom);
 end
 
-%%%%%%%% adapted until here, TBC
 
-%% Import DICOM-Files with SPM
+%% ----- Convert DICOM-Files to Nifti Files using SPM ----- %
 
 % create cell with dcm files:
-filt = '^.*\.dcm';
+filt    = '^.*\.dcm';
 [files] = spm_select('FPList', dir_dicom, filt);
-files = cellstr(files);
+files   = cellstr(files);
 
-% where to save the unsorted .nii files: 
-raw_data = fullfile(dir_source, 'raw_data');
-if exist(raw_data, 'dir') ~= 7
-    mkdir(raw_data); 
+% temporary folder to save the unsorted .nii files from conversion process 
+tmp_nii = fullfile(subdir, '..', 'raw_data');
+if exist(tmp_nii, 'dir') ~= 7
+    mkdir(tmp_nii); 
 end 
 
 % specify matlab batch
-matlabbatch{1}.spm.util.import.dicom.data = files; 
-matlabbatch{1}.spm.util.import.dicom.root = 'patid';
-matlabbatch{1}.spm.util.import.dicom.outdir = cellstr(raw_data); 
-matlabbatch{1}.spm.util.import.dicom.protfilter = '.*';
-matlabbatch{1}.spm.util.import.dicom.convopts.format = 'nii';
-matlabbatch{1}.spm.util.import.dicom.convopts.meta = 0;
-matlabbatch{1}.spm.util.import.dicom.convopts.icedims = 0;
+matlabbatch{1}.spm.util.import.dicom.data               = files; 
+matlabbatch{1}.spm.util.import.dicom.root               = 'patid';
+matlabbatch{1}.spm.util.import.dicom.outdir             = cellstr(tmp_nii); 
+matlabbatch{1}.spm.util.import.dicom.protfilter         = '.*';
+matlabbatch{1}.spm.util.import.dicom.convopts.format    = 'nii';
+matlabbatch{1}.spm.util.import.dicom.convopts.meta      = 0;
+matlabbatch{1}.spm.util.import.dicom.convopts.icedims   = 0;
 
 % run batch
 spm_jobman('run', matlabbatch);
 
-%% Identify different types of scans, rename them and move them into BIDS folders
+% Interim result: newly created nifti files in folder 'tmp_nii'. For each
+% functional run one folder where each volume is stored as a 3D nifti
+% image. Later those will be merged to one 4D nifti image.
 
-% identify in which folder SPM saved the data for subject XX
-name_folder = dir(raw_data); 
-name_folder = name_folder(~ismember({name_folder.name},{'.','..', ...
-    '.DS_Store'})); % we only want the subject folder
-name_folder = string(name_folder.name);
 
-% this folder is called nii_dir now:
-nii_dir = fullfile(raw_data, name_folder);
+%% ----- Rename & Sort Nifti-Scans and Log-Files ----- %
 
-%% Structural scans
-% create filters to identify the structural scans within this folder
-filt_1 = 't1*'; 
-filt_2 = 'anat*'; % if filt_1 does not work
+% 1) identify in which folder SPM saved the data for subject XX
+    dir_nii = {dir(tmp_nii).name}';
+    dir_nii = dir_nii{contains( ... % we only want the visible folder
+                dir_nii, regexpPattern('^[^.].*'))}; 
+    dir_nii = fullfile(tmp_nii, dir_nii);
 
-t1_folder  = {dir(fullfile(nii_dir, filt_1)).name}'; 
-if isempty(t1_folder) == 1
-    t1_folder = {dir(fullfile(nii_dir, filt_2)).name}'; 
-    % if filt_1 does not work, try out filt_2
-end 
 
-% if no filter works, one has to identify T1 scan manually...
-if isempty(t1_folder) == 1 
-    message = ['Sorry, we could not find the folder with T1w images.' ...
-        'Please specify manually.']; 
-    error(message)
-end 
-
-% in case it worked, specify directory
-t1_folder = fullfile(nii_dir, (t1_folder{1,1}));
-
-% specify .nii in this t1_folder
-structural_scan = {dir(t1_folder).name}';
-structural_scan = structural_scan{3,1}; % to ignore '.' and '..'
-
-bids_format = strcat(sub_name, '_ses-01_T1w.nii'); % how to rename file
-
-% where to move the file
-move_to = fullfile(anat_filepath, bids_format);
-
-% specify directory of the .nii file
-move_from = fullfile(t1_folder, structural_scan);
-
-% finally, move the file
-copyfile(move_from, move_to)
-
-%% Functional scans
-% create filters to identify the functional scans 
-
-filt_3 = 'ep*'; 
-filt_4 = 'func*';
-
-func_folders = {dir(fullfile(nii_dir, filt_3)).name}'; 
-if isempty(func_folders) == 1; 
-    func_folders = {dir(fullfile(nii_dir, filt_4)).name}'; 
-end 
-
-if isempty(func_folders) == 1; 
-    message = ['Sorry, we could not find the folder with the ' ...
-        'functional scans. Please specify manually.']; 
-    error(message)
-end 
-
-nrun = numel(func_folders); % number of runs
-
-for run = 1:nrun 
-    run_name = string(func_folders{run, 1}); % name of folder for run XX
-    run_path = fullfile(nii_dir, run_name); % directory of this folder
-    run_string = sprintf('run-%02d', run); % creates 'run-XX'
-
-    filt_5 = '^.*\.nii$'; % create filter for finding volumes 
-    [files_vol] = spm_select('FPList', run_path, filt_5); % list volumes
-    files_vol = cellstr(files_vol);
-
-    nvol = numel(files_vol); % number of volumes
-
-    for volume = 1:nvol
-        % create new name for volume in BIDS format
-        bids_volume = strcat(sub_name, '_ses-01_task_', run_string, '_', ...
-            num2str(volume), '_bold.nii');
-        move_from = files_vol{volume, 1}; % where to find the volume
-        move_to = fullfile(func_filepath, bids_volume); % where to save it
-
-        copyfile(move_from, move_to) % finally move the file
+% 2) Anatomical Scans
+    % identify t1 folder and move file to sub-xx/anat
+    
+    % create two filters to identify the anatomical folder within this dir_nii
+    filt_1 = 't1*'; filt_2 = 'anat*';
+    
+    % find folder
+    dir_nii_t1  = {dir(fullfile(dir_nii, filt_1)).name}'; 
+    if isempty(dir_nii_t1) == 1
+        % if filt_1 does not work, try out filt_2
+        dir_nii_t1 = {dir(fullfile(dir_nii, filt_2)).name}'; 
+      
+        % if no filter works, one has to identify T1 scan manually...
+        if isempty(dir_nii_t1) == 1 
+        message = ['Sorry, we could not find the folder with T1w images.' ...
+            'Please specify manually.']; 
+        error(message)
+        end 
     end 
-end 
+    % in case it worked, specify directory
+    dir_nii_t1 = fullfile(dir_nii, (dir_nii_t1{1}));
 
-% delete the unsorted files (critical)
-rmdir(raw_data, 's');
+    % identify t1 nifti file in this folder
+    t1 = dir(dir_nii_t1);           % list content of folder
+    t1 = t1([t1.isdir]==0).name;    % filter for file
+    t1 = fullfile(dir_nii_t1, t1);  % full path to t1
 
-disp('Succesfully imported.'); 
+    % rename and move it
+    movefile(t1, ...
+        fullfile(dir_anat, strcat(subject,'_ses-01_T1w.nii')), 'f');
+
+
+% 3) Functional Scans
+    % identify func folders, rename & move files to sub-xx/func
+    
+    % create filters to identify the functional folders 
+    filt_3 = 'ep*'; filt_4 = 'func*';
+
+    % find folders using one of the filters
+    dir_nii_func = {dir(fullfile(dir_nii, filt_3)).name}'; 
+    if isempty(dir_nii_func) == 1
+        dir_nii_func = {dir(fullfile(dir_nii, filt_4)).name}'; 
+        if isempty(dir_nii_func) == 1
+        message = ['Sorry, we could not find the folder with the ' ...
+            'functional scans. Please specify manually.']; 
+        error(message)
+        end
+    end 
+
+    % prepare & identify log files in parent folder
+    filt        = strcat('^FMRI_log_',subject(5:6),'.*\.mat');
+    [log_files] = spm_select('FPList', fullfile(subdir, '..'), filt);
+    log_files   = cellstr(log_files);
+
+    % loop over runs, merge nifti files to 4D and move to BIDS folder
+    for run = 1:numel(dir_nii_func) 
+        run_dir     = string(dir_nii_func{run, 1}); % name of folder
+        run_path    = fullfile(dir_nii, run_dir);   % path to this folder
+    
+        % select all niftis in run_dir
+        [files_vol] = spm_select('FPList', run_path, '^.*\.nii$'); % list volumes
+        files_vol = cellstr(files_vol);
+   
+        % create BIDS-compliant file name
+        run_name = strcat(subject, '_ses-01_task_', ...
+                sprintf('run-%02d', run), '_bold.nii');
+        
+        % merge all 3D niftis from run to one 4D nifti
+        spm_file_merge(files_vol, run_name)
+
+        % move that 4D nifti to BIDS folder
+        movefile(fullfile(run_path, run_name), dir_func, 'f')
+
+        % finally, move matching log file into func folder as well
+        log_name = strcat('log-file_', sprintf('run-%02d', run), '.mat');
+        movefile(log_files{run, 1}, fullfile(dir_func, log_name), 'f'); 
+    end 
+
+
+% 4) Delete the temporary folder
+    rmdir(tmp_nii, 's');
+    disp(strcat('Succesfully imported to BIDS for participant: ', subject)); 
+
 end
 

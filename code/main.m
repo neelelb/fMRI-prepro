@@ -65,9 +65,10 @@ if exp == 'h'
     dir_source = dir_source_h;
 
     % --- Scanning & Preprocessing Parameters
-    nruns   = 6;        % number of runs
-    fwhm    = 6;        % ADAPT?, filter for smoothing
-    time    = 'secs';   % time unit scans or seconds
+    nruns      = 6;        % number of runs
+    voxel_size = 3;        % voxel size for normalisation
+    fwhm       = 6;        % ADAPT?, filter for smoothing
+    time       = 'secs';   % time unit scans or seconds
 
     % --- Initialise Subject-IDs
     % assuming that participants folders will be named according to the
@@ -98,9 +99,10 @@ elseif exp == 'm'
     dir_source = dir_source_m;
 
     % --- Scanning & Preprocessing Parameters
-    nruns   = 1;        % number of runs
-    fwhm    = 6;        % filter setting for smoothing
-    time    = 'scans';  % time unit: scans or seconds
+    nruns      = 1;        % number of runs
+    fwhm       = 6;        % filter setting for smoothing
+    voxel_size = 3;        % voxel size for normalisation
+    time       = 'scans';  % time unit: scans or seconds
 
     % --- Initialise Subject-IDs
     % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -131,7 +133,7 @@ for subject = 1:N
 
     % ---- Normalise ----- %
     % function normalises functional (& per default anatomical) images
-    normalise(subdir, nruns)
+    normalise(subdir, nruns, voxel_size)
 
     % ----- Smoothing ----- %
     % function smoothes functional images with a FWHM of 6mm

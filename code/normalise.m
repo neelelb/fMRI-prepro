@@ -12,11 +12,12 @@
 %   or 'nii', default is nii)
 % output: normalized func files (and anat file) in participants' folder
 % ----------------------------------------------------------------------
-function normalise(subdir, nruns, anatomical, format)
+function normalise(subdir, nruns, voxel_size, anatomical, format)
 
 if nargin < 2; nruns = 1; end      % default of nrun is 1
-if nargin < 3; anatomical = 1; end % default of anatomical is 1
-if nargin < 4; format = 'nii'; end % default of format is nii
+if nargin < 3; voxel_size = 3; end % default of voxel_size is 3
+if nargin < 4; anatomical = 1; end % default of anatomical is 1
+if nargin < 5; format = 'nii'; end % default of format is nii
 
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');
@@ -76,7 +77,8 @@ end
 % matlab normalization batch to normalize func data
 matlabbatch{1}.spm.spatial.normalise.write.woptions.bb      = [-78 -112 -70
                                                                 78 76 85];
-matlabbatch{1}.spm.spatial.normalise.write.woptions.vox     = [3 3 3]; % adapt
+matlabbatch{1}.spm.spatial.normalise.write.woptions.vox     = [voxel_size ...
+    voxel_size voxel_size]; 
 matlabbatch{1}.spm.spatial.normalise.write.woptions.interp  = 4;
 matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix  = 'w';
 

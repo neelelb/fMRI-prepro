@@ -137,6 +137,14 @@ for subject = 1:N
     % initialise participants' subdirectory
     subdir = fullfile(dir_source, SJs{subject});
 
+    % ----- Create onsets ----- %
+    % 
+    if experiment == h
+        create_onset(subdir, nruns, 2, time)
+    elseif experiment == m 
+        onset ...
+    end 
+
     % ----- Specify ----- %
     % function specifies first level Design Matrix (SPM.mat) according to 
     % spm12 manual instructions 

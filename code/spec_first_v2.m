@@ -9,13 +9,14 @@
 % input: subdir (path to one participants' data in BIDS)
 % output: SPM.mat file written into participants' stats folder
 % ----------------------------------------------------------------------
-function spec_first_v2(subdir, nruns, TR, time, duration, format)
+function spec_first_v2(subdir, nruns, TR, time, duration, format, realign)
 
 if nargin < 2; nruns = 1; end       % default of nrun is 1
 if nargin < 3; TR = 2; end
 if nargin < 4; time = 'secs'; end  % default of time format is seconds
 if nargin < 5; duration = 6; end  % default of format is nii
 if nargin < 6; format = 'nii'; end  % default of format is nii
+if nargin < 7; realign = 0; end 
 
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');
@@ -30,16 +31,15 @@ end
 % specify the names of the conditions 
 names = {'stimulation_vibration', 'stimulation_pressure', ...
     'stimulation_flutter', 'imagination_vibration', 'imagination_pressure', ...
-    'imagination_flutter', 'attention'}; % Do we want 1 or 3 controll cond?
+    'imagination_flutter', 'attention'}; 
 
 ncond = numel(names); % number of conditions in the design matrix
 
 % prepare cell arrays
 onsets = cell(1, ncond);
-
 durations = cell(1, ncond);
 
-filt = '^log.*\.mat$';
+filt = '^log.*\.mat$'; % adapt 
 [files] = spm_select('FPList', subdir_func, filt);
 files = cellstr(files);
 
@@ -65,8 +65,7 @@ for run = 1:nruns
     onsets{1, 7} = design_matrix(1, (design_matrix(3, :) == 3)); 
 
     for condition = 1:ncond
-        ntrials = numel(onsets{1, condition});
-        durations{1, condition} = repmat(duration, 1, ntrials); 
+        durations{1, condition} = duration; % right format?
     end 
 
     conditions_path = fullfile(dir_stats, strcat('conditions_', ...
@@ -96,7 +95,7 @@ for run = 1:nruns
        filt_txt = strcat('^rp.*', sprintf('run-%02d',run));
     elseif strcmp(format, 'img') == 1 && nruns == 1 
        filt_func = '^swr.*\.img$';
-       filt_txt = '^r.*\.txt$';
+       filt_txt = '^rp.*\.txt$';
     elseif strcmp(format, 'img') == 1 && nruns ~= 1 
        filt_func = strcat('^swr.*',sprintf('run-%02d',run));
        filt_txt = strcat('^rp.*', sprintf('run-%02d',run));
@@ -118,19 +117,24 @@ for run = 1:nruns
     file_condition = fullfile(dir_stats, strcat('conditions_', ...
         sprintf('run-%02d', run), '.mat'));
 
-    % SPM filter to select all realignment parameter files
-    [files_txt] = spm_select('FPList', subdir_func, filt_txt);
-    files_txt   = cellstr(files);
-    % account for error
-    if isempty(files) == 1 
-        message = 'No realignment parameters found.'; 
-        error(message)
+    if realign == 1
+        % SPM filter to select all realignment parameter files
+        [files_txt] = spm_select('FPList', subdir_func, filt_txt);
+        files_txt   = cellstr(files);
+        matlabbatch{1}.spm.stats.fmri_spec.sess(run).multi_reg  = files_txt;
+        % account for error
+        if isempty(files) == 1 
+            message = 'No realignment parameters found.'; 
+            error(message)
+        end 
+    else 
+        disp('Realignment parameters not included in design matrix.')
+        matlabbatch{1}.spm.stats.fmri_spec.sess(run).multi_reg  = {};
     end 
 
     % include files & condition in matlab batch for each run
     matlabbatch{1}.spm.stats.fmri_spec.sess(run).scans = files;
     matlabbatch{1}.spm.stats.fmri_spec.sess(run).multi = {file_condition};
-    matlabbatch{1}.spm.stats.fmri_spec.sess(run).multi_reg  = files_txt;
     
     % hard coded
     matlabbatch{1}.spm.stats.fmri_spec.sess(run).cond = struct('name', {}, 'onset', {}, 'duration', {}, 'tmod', {}, 'pmod', {}, 'orth', {});

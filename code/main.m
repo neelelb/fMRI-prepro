@@ -9,9 +9,10 @@
 % semester...................Summer term 2022
 
 % description: this code ...
-% data: mother of all experiments (MoAE) data as analyzed in Chapter 31 of 
-% SPM12 Manual (https://www.fil.ion.ucl.ac.uk/spm/doc/spm12_manual.pdf),
-% in BIDS format
+% data experiment 'm': mother of all experiments (MoAE) data as analyzed in 
+% Ch.31 of SPM12 Manual (https://www.fil.ion.ucl.ac.uk/spm/doc/spm12_manual.pdf),
+% data experiment 'h': example fMRI data from one participant from a FU 
+% study about Tactile Imagery (data not publicly available)
 % ----------------------------------------------------------------------
 
 clear; close all; clc
@@ -20,86 +21,94 @@ clear; close all; clc
 
 % !PLEASE NOTE!: if you are a guest and you want to make this run on your 
 % device, please fill in your respective paths under user == 'g'. The
-% dir_spm directory needs to point to the "tpm" folder in your spm12
+% dir_spm directory needs to point to the 'tpm' folder in your spm12
 % folder.
 
 user = input(['Insert ''a'' if you are Alex, ''n'' if you are Neele, ' ...
     'and ''g'' if you are a guest: '], 's');
-
-experiment = input(['Insert ''m'' if you want to analyse the data from ' ...
+exp = input(['Insert ''m'' if you want to analyse the data from ' ...
     'the SPM tutorial, insert ''h'' if you want to analyse the data from ' ...
     'the imagery experiment. '], 's');
 
 if user == 'a'
     dir_analysis    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/code';
-    if experiment == 'm' 
-       dir_source = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/MoAEpilot';
-    elseif experiment == 'h'
-       dir_source = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/experiment';
-       dir_dcm    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/NCM-II Homework Dataset';
-    end
+    dir_source_m    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/MoAEpilot';
+    dir_source_h    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/experiment';
     dir_spm         = '/Users/AlexanderLenders/Documents/MATLAB/spm12/tpm';
     disp('Hi Alex!')
 elseif user == 'n'
     dir_analysis    = '/Users/neele/Documents/github/fMRI-prepro/code'; 
-    if experiment == 'm'
-       dir_source = '/Users/neele/Documents/github/fMRI-prepro/data/MoAE';
-    elseif experiment == 'h'
-       % dir_source = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/experiment';
-       % dir_dcm    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/NCM-II Homework Dataset';
-    end
+    dir_source_m    = '/Users/neele/Documents/github/fMRI-prepro/data/MoAE';
+    dir_source_h    = '/Users/neele/Documents/github/fMRI-prepro/data/ccnb';
     dir_spm         = '/Applications/MATLAB_R2021b.app/toolbox/spm12/tpm';
     disp('Hi Neele!')
 elseif user == 'g'
     dir_analysis    = '[fill in your path to analysis code]'; 
-    if experiment == 'm'
-        dir_source = '[fill in your path to data]';
-    elseif experiment == 'h'
-       dir_source  = '[fill in your path to data]';
-       dir_dcm     = '[fill in your path to data]';
-    end
+    dir_source_m    = '[fill in your path to MoAE data]';
+    dir_source_h    = '[fill in your path to ccnb (Tactile Imagery) data]';
     dir_spm         = '[fill in your spm/tpm path]';
     disp('Welcome!')
 else
-    message = ['Code must be ''a'', ''n'', or ''g'' depending on which ' ...
+    message = ['User must be ''a'', ''n'', or ''g'' depending on which '...
         'computer this is running on. No directories could be assigned.']; 
     error(message)
 end
 
 cd(dir_analysis)
 
-if experiment == 'h'
-    %% ----- Parameters ----- %
-    nruns = 6; 
-    time = 'secs'; 
-    %% ----- Import DICOM files and create BIDS folder structure ----- %
-    % import DICOM files, convert them into .nii and create a BID format
-    % folder structure
-    SJs     = {dir(fullfile(dir_dcm, 'ccnb*')).name}'; % array with sub-IDs
+
+%% ----- Initialise Parameters ----- %
+
+% for MoAE experiment...
+if exp == 'h'
+    % --- set correct dir_source
+    dir_source = dir_source_h;
+
+    % --- Scanning & Preprocessing Parameters
+    nruns   = 6;        % number of runs
+    fwhm    = 6;        % ADAPT?, filter for smoothing
+    time    = 'secs';   % time unit scans or seconds
+
+    % --- Initialise Subject-IDs
+    % assuming that participants folders will be named according to the
+    % structure 'ccnb_**xx', where xx denotes the subject number.
+    % Find all 'ccnb_**xx' folders and create 'sub-*' array: 
+    ccnbs   = {dir(fullfile(dir_source, 'ccnb_*')).name}'; 
+    regex   = '\d{2}$'; % regular expression, parse for xx
+    SJs     = regexp(ccnbs, regex, 'match'); % apply regex
+    SJs     = strcat('sub-',string(SJs)); % convert to 'sub-*' form
     N       = numel(SJs); % number of participants
 
-    for nsubject = 1:N
-        sub = SJs{nsubject, 1}; 
-        import_bids(dir_dcm, dir_source, sub, nsubject);
+    % --- Import DICOM files and create BIDS folder structure
+    % import DICOM files, convert them into .nii and create a BID format
+    % folder structure
+    for subject = 1:N
+        % renaming folder from 'ccnb_**xx' to 'sub-xx'
+        olddir = fullfile(dir_source, ccnbs{subject});
+        subdir = fullfile(dir_source, SJs{subject});
+        movefile(olddir, subdir, 'f')
+
+        % convert dicoms to nifti images
+        import_bids(newdir, SJs{subject});
     end
+   
+% for Tactile Imagery Experiment...
+elseif exp == 'm'
+    % --- set correct dir_source
+    dir_source = dir_source_m;
 
-    % move log files into the func folder (in line with BIDS format)
+    % --- Scanning & Preprocessing Parameters
+    nruns   = 1;        % number of runs
+    fwhm    = 6;        % filter setting for smoothing
+    time    = 'scans';  % time unit: scans or seconds
 
-    for nsubject = 1:N
-        sub = SJs{nsubject, 1}; 
-        move_logs(dir_dcm, dir_source, nsubject, nruns); 
-    end
-
-elseif experiment == 'm'
-    nruns = 1;
-    time = 'scans'; 
+    % --- Initialise Subject-IDs
+    % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
+    % information in character array SJs containing all participants
+    SJs     = {dir(fullfile(dir_source, 'sub-*')).name}';
+    N       = numel(SJs); % number of participants
 end
 
-%% ----- Initialise sub-IDs ----- %
-% find all 'sub-*' folders in data source folder. Extract 'sub-*' 
-% information in character array SJs containing all participants
-SJs     = {dir(fullfile(dir_source, 'sub-*')).name}'; % array with sub-IDs
-N       = numel(SJs); % number of participants
 
 
 %% ----- Preprocessing For-Loop ----- %
@@ -126,9 +135,10 @@ for subject = 1:N
 
     % ----- Smoothing ----- %
     % function smoothes functional images with a FWHM of 6mm
-    smooth(subdir)
+    smooth(subdir, fwhm, nruns)
 
 end
+
 
 
 %% ----- First Level Analysis For-Loop ----- %

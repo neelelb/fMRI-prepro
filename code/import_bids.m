@@ -9,43 +9,45 @@
 % input: 
 % output: 
 % ----------------------------------------------------------------------
-function import_bids(dir_dcm, dir_source, sub, nsubject) 
+function import_bids(subdir, subject) 
 
 % This is a workaround which imports DICOM files with SPM 12, converts 
 % the files into .nii-format and creates a BIDS folder structure. Note
 % however, that no .json files are created. Furthermore, log-files have
 % to be moved manually to the func folders.
 
-%% Create BIDS folder structure 
+% currently the dicom files are floating in newfolder
+% this script 
+% 1) generates folder in newdir similar to bids structure (log, anat, func)
+% 2) moves the log files lying one level above newdir
+% 3) converts dicoms to nifti files and structures them into the folders
 
-sub_name = sprintf('sub-%02d', nsubject); % create 'sub-XX' string
 
-% create 'sub-XX folder'
-filepath = fullfile(dir_source, sub_name); 
-if exist(filepath, 'dir') ~= 7 % create subject folder only if not existing
-    mkdir(dir_source, sub_name); 
-end 
+%% Create BIDS folder structure
 
-% create sub-xx/anat folder
-anat_filepath = fullfile(filepath, 'anat'); 
-if exist(anat_filepath, 'dir') ~= 7
-    mkdir(filepath, 'anat')
-end 
+% create new directories (sub-xx/...) if they do not exist already
+dir_anat    = fullfile(subdir, 'anat');
+dir_func    = fullfile(subdir, 'func');
+dir_log     = fullfile(subdir, 'log');
+dir_dicom   = fullfile(subdir, 'dicom');
+if not(isfolder(dir_anat));  mkdir(dir_anat);   end
+if not(isfolder(dir_func));  mkdir(dir_func);   end
+if not(isfolder(dir_log));   mkdir(dir_log);    end
+if not(isfolder(dir_dicom)); mkdir(dir_dicom);  end
 
-% create sub-xx/func folder
-func_filepath = fullfile(filepath, 'func'); 
-if exist(func_filepath, 'dir') ~= 7 
-    mkdir(filepath, 'func'); 
-end 
+% move dicom files into dicom folder
+dicom_files = {dir(fullfile(subdir, '*dcm')).name}';
+for f = 1:numel(dicom_files)
+  movefile(fullfile(subdir, dicom_files{f}), dir_dicom);
+end
+
+%%%%%%%% adapted until here, TBC
 
 %% Import DICOM-Files with SPM
 
-% where to search for the dcm files: 
-sub_dir = fullfile(dir_dcm, sub);
-
 % create cell with dcm files:
 filt = '^.*\.dcm';
-[files] = spm_select('FPList', sub_dir, filt);
+[files] = spm_select('FPList', dir_dicom, filt);
 files = cellstr(files);
 
 % where to save the unsorted .nii files: 

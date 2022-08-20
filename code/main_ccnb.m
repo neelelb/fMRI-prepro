@@ -67,6 +67,13 @@ for subject = 1:N
 end
 
 
+% move dicoms to dicom
+% move log files to log folder
+
+...
+
+
+
 
 %% ----- Preprocessing For-Loop ----- %
 % loops over 'subjects' in SJs and performs preprocessing steps

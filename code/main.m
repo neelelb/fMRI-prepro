@@ -59,15 +59,16 @@ cd(dir_analysis)
 
 %% ----- Initialise Parameters ----- %
 
-% for MoAE experiment...
+% for Tactile Imagery experiment...
 if exp == 'h'
     % --- set correct dir_source
     dir_source = dir_source_h;
 
     % --- Scanning & Preprocessing Parameters
-    nruns   = 6;        % number of runs
-    fwhm    = 6;        % ADAPT?, filter for smoothing
-    time    = 'secs';   % time unit scans or seconds
+    nruns      = 6;        % number of runs
+    voxel_size = 3;        % voxel size for normalisation
+    fwhm       = 6;        % ADAPT?, filter for smoothing
+    time       = 'secs';   % time unit scans or seconds
 
     % --- Initialise Subject-IDs
     % assuming that participants folders will be named according to the
@@ -92,15 +93,16 @@ if exp == 'h'
         import_bids(subdir, SJs{subject});
     end
    
-% for Tactile Imagery Experiment...
+% for MoAE experiment...
 elseif exp == 'm'
     % --- set correct dir_source
     dir_source = dir_source_m;
 
     % --- Scanning & Preprocessing Parameters
-    nruns   = 1;        % number of runs
-    fwhm    = 6;        % filter setting for smoothing
-    time    = 'scans';  % time unit: scans or seconds
+    nruns      = 1;        % number of runs
+    fwhm       = 6;        % filter setting for smoothing
+    voxel_size = 3;        % voxel size for normalisation
+    time       = 'scans';  % time unit: scans or seconds
 
     % --- Initialise Subject-IDs
     % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -112,58 +114,72 @@ end
 
 
 %% ----- Preprocessing For-Loop ----- %
+
 % loops over 'subjects' in SJs and performs preprocessing steps
-% for subject = 1:N
-%     % initialise participants' subdirectory
-%     subdir = fullfile(dir_source, SJs{subject});
-% 
-%     % ---- Realignment ----- %
-%     % function realigns functional images
-%     realign(subdir, nruns)
-% 
-%     % ---- Coregistration ----- %
-%     % function coregisters functional and anatomical images
-%     coreg(subdir)
-%     
-%     % ---- Segmentation ----- %
-%     % function segments T1w image of participant
-%     segment(subdir, dir_spm)
-% 
-%     % ---- Normalise ----- %
-%     % function normalises functional (& per default anatomical) images
-%     normalise(subdir, nruns)
-% 
-%     % ----- Smoothing ----- %
-%     % function smoothes functional images with a FWHM of 6mm
-%     smooth(subdir, fwhm, nruns)
-% 
-% end
-% 
-% 
-% 
-% %% ----- First Level Analysis For-Loop ----- %
-% % loops over 'subjects' in SJs and performs first level analysis
-% for subject = 1:N
-%     % initialise participants' subdirectory
-%     subdir = fullfile(dir_source, SJs{subject});
-% 
-%     % ----- Create onsets ----- %
-%     % 
-%     if experiment == h
-%         create_onset(subdir, nruns, 2, time)
-%     elseif experiment == m 
-%         onset ...
-%     end 
-% 
-%     % ----- Specify ----- %
-%     % function specifies first level Design Matrix (SPM.mat) according to 
-%     % spm12 manual instructions 
-%     spec_first_v2(subdir, nruns, 2, time)
-% 
-%     % ----- Estimate ----- %
-%     % function estimates formerly specified first level model (SPM.mat)
-%     est_first(subdir)
-% end
+for subject = 1:N
+    % initialise participants' subdirectory
+    subdir = fullfile(dir_source, SJs{subject});
+
+    % ---- Realignment ----- %
+    % function realigns functional images
+    realign(subdir, nruns)
+
+    % ---- Coregistration ----- %
+    % function coregisters functional and anatomical images
+    coreg(subdir)
+    
+    % ---- Segmentation ----- %
+    % function segments T1w image of participant
+    segment(subdir, dir_spm)
+
+    % ---- Normalise ----- %
+    % function normalises functional (& per default anatomical) images
+    normalise(subdir, nruns, voxel_size)
+
+    % ----- Smoothing ----- %
+    % function smoothes functional images with a FWHM of 6mm
+    smooth(subdir, fwhm, nruns)
+
+end
+
+
+%% ----- First Level Analysis For-Loop ----- %
+% loops over 'subjects' in SJs and performs first level analysis
+for subject = 1:N
+    % ----- TEMPORARY -------------%
+    SJs = {dir(fullfile(dir_source, 'sub-*')).name}'; % array with sub-IDs
+    N   = numel(SJs); % number of participants
+    % initialise participants' subdirectory
+    subdir = fullfile(dir_source, SJs{subject});
+    % ----- TEMPORARY -------------%
+
+
+    % ----- Create conditions ----- %
+    if exp == 'm' 
+        % create conditions.mat file for MoAE experiment in .../func
+        names          = {'listening'}; 
+        onsets{1,1}    = [6:12:78]; 
+        durations{1,1} = 6; 
+        conditions_path = fullfile(subdir, 'func', 'conditions.mat');
+        save(conditions_path, 'names', 'onsets', 'durations'); 
+    elseif exp == 'h'
+       % function creates conditions.mat file for each run in .../func
+       create_conditions(subdir, nruns)
+    end 
+
+    % ----- Specify design matrix %
+    % function specifies first level Design Matrix (SPM.mat) according to 
+    % spm12 manual instructions 
+    spec_first_v2(subdir, nruns, 2, 1, time)
+
+    % ----- Estimate ----- %
+    % function estimates formerly specified first level model (SPM.mat)
+    est_first(subdir)
+
+    % ---- Contrasts ---- %
+    % to be continued...
+end
+
 
 
 

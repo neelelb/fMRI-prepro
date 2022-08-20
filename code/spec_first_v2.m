@@ -13,7 +13,7 @@ function spec_first_v2(subdir, nruns, TR, time, duration, format)
 
 if nargin < 2; nruns = 1; end       % default of nrun is 1
 if nargin < 3; TR = 2; end
-if nargin < 4; time = 'seconds'; end  % default of time format is seconds
+if nargin < 4; time = 'secs'; end  % default of time format is seconds
 if nargin < 5; duration = 6; end  % default of format is nii
 if nargin < 6; format = 'nii'; end  % default of format is nii
 

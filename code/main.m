@@ -71,8 +71,8 @@ cd(dir_analysis)
 if experiment == 'h'
     %% ----- Parameters ----- %
     nruns = 6; 
-    time = 'seconds'; 
-    %% ----- Import DICOM files and create BID folder structure ----- %
+    time = 'secs'; 
+    %% ----- Import DICOM files and create BIDS folder structure ----- %
     % import DICOM files, convert them into .nii and create a BID format
     % folder structure
     SJs     = {dir(fullfile(dir_dcm, 'ccnb*')).name}'; % array with sub-IDs
@@ -82,6 +82,14 @@ if experiment == 'h'
         sub = SJs{nsubject, 1}; 
         import_bids(dir_dcm, dir_source, sub, nsubject);
     end
+
+    % move log files into the func folder (in line with BIDS format)
+
+    for nsubject = 1:N
+        sub = SJs{nsubject, 1}; 
+        move_logs(dir_dcm, dir_source, nsubject, nruns); 
+    end
+
 elseif experiment == 'm'
     nruns = 1;
     time = 'scans'; 
@@ -132,7 +140,7 @@ for subject = 1:N
     % ----- Specify ----- %
     % function specifies first level Design Matrix (SPM.mat) according to 
     % spm12 manual instructions 
-    spec_first(subdir, nruns, time)
+    spec_first_v2(subdir, nruns, 2, time)
 
     % ----- Estimate ----- %
     % function estimates formerly specified first level model (SPM.mat)

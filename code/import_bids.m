@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% Import Function
+% Import BIDS Function
 % ----------------------------------------------------------------------
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing

@@ -24,6 +24,29 @@ if not(isfolder(dir_stats))
     mkdir(dir_stats)
 end
 
+%% ----- load onset files -----
+
+filt = '^log.*\.mat$';
+[files] = spm_select('FPList', subdir_func, filt);
+files = cellstr(files);
+
+for run = 1:nruns 
+    log_file_path = files{run, 1}; 
+    log_file = load(log_file_path); 
+    design_matrix = log_file.log_ExPra19.Design;
+    design_matrix(1, :) = design_matrix(1, :) ./ 1000; % to transform to seconds
+    onsets_stimulus = design_matrix(1, design_matrix(3, :) == 1);
+    onsets_imagination = design_matrix(1, design_matrix(3, :) == 2);
+    onsets_attention = design_matrix(1, design_matrix(3, :) == 3);
+    onsets_vibration = design_matrix(1, design_matrix(4, :) == 1);
+    onsets_pressure = design_matrix(1, design_matrix(4, :) == 2);
+    onsets_flutter = design_matrix(1, design_matrix(4, :) == 3);
+end
+
+
+
+
+
 
 %% ----- create matlab batch -----
 

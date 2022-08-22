@@ -100,6 +100,9 @@ if exp == 'h'
             import_bids(subdir, SJs{subject});
         end
     end
+    % update SJs folder
+    SJs = {dir(fullfile(dir_source, 'sub-*')).name}'; % array with sub-IDs
+
    
 % for MoAE experiment...
 elseif exp == 'm'

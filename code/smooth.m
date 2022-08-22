@@ -23,7 +23,7 @@ subdir_func = fullfile(subdir, 'func');
 if strcmp(format, 'nii') == 1 
     filt = '^w.*\.nii$';
 elseif strcmp(format, 'img') == 1 
-        filt = '^w.*\.img$';
+    filt = '^w.*\.img$';
 else 
     message = 'Wrong specified file format. See input arguments.'; 
     error(message)

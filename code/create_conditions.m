@@ -12,7 +12,7 @@
 function create_conditions(subdir, nruns, duration)
 
 if nargin < 2; nruns = 1; end     % default of nrun is 1
-if nargin < 3; duration = 6; end  % default of format is nii
+if nargin < 3; duration = 6; end  % default duration
 
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');

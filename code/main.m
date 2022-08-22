@@ -73,6 +73,7 @@ if exp == 'h'
     voxel_size = 3;        % voxel size for normalisation
     fwhm       = 6;        % ADAPT?, filter for smoothing
     time       = 'secs';   % time unit scans or seconds
+    TR         = 2;
 
     % --- Initialise Subject-IDs
     % assuming that participants folders will be named according to the
@@ -110,6 +111,7 @@ elseif exp == 'm'
     fwhm       = 6;        % filter setting for smoothing
     voxel_size = 3;        % voxel size for normalisation
     time       = 'scans';  % time unit: scans or seconds
+    TR         = 7; 
 
     % --- Initialise Subject-IDs
     % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -170,22 +172,28 @@ for subject = 1:N
         durations{1,1} = 6; 
         conditions_path = fullfile(subdir, 'func', 'conditions.mat');
         save(conditions_path, 'names', 'onsets', 'durations'); 
+
+        % specify design matrix (SPM.mat) according to SPM 12 manual
+        % instructions
+        spec_first_v2(subdir, nruns, TR, 0, time) 
+
+        % function estimates formerly specified first level model (SPM.mat)
+        est_first(subdir)
+
     elseif exp == 'h'
-       % function creates conditions.mat file for each run in .../func
-       create_conditions(subdir, nruns)
+       % function creates conditions.mat file for each run in ../func
+       create_conditions(subdir, nruns, duration)
+        
+       % specify design matrix (SPM.mat)
+       spec_first_v2(subdir, nruns, TR, 1, time)
+
+       % function estimates formerly specified first level model (SPM.mat)
+       est_first(subdir)
+
+       % function creates contrasts in line with the assignment
+       % instructions
+       create_contrasts(subdir)
     end 
-
-    % ----- Specify design matrix %
-    % function specifies first level Design Matrix (SPM.mat) according to 
-    % spm12 manual instructions 
-    spec_first_v2(subdir, nruns, 2, 1, time)
-
-    % ----- Estimate ----- %
-    % function estimates formerly specified first level model (SPM.mat)
-    est_first(subdir)
-
-    % ---- Contrasts ---- %
-    % to be continued...
 end
 
 

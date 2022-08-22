@@ -48,8 +48,10 @@ matlabbatch{1}.spm.spatial.smooth.prefix    = 's';
 
 
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_smoothing.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_smoothing.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
+disp(strcat('Successfully ran smoothing for',32,subject))
 end

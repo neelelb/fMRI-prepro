@@ -12,7 +12,7 @@
 %   or 'nii', default is nii)
 % output: normalized func files (and anat file) in participants' folder
 % ----------------------------------------------------------------------
-function normalise(subdir, nruns, voxel_size, anatomical, format)
+function normalize(subdir, nruns, voxel_size, anatomical, format)
 
 if nargin < 2; nruns = 1; end      % default of nrun is 1
 if nargin < 3; voxel_size = 3; end % default of voxel_size is 3
@@ -104,9 +104,11 @@ end
 
 
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_normalization.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_normalization.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
+disp(strcat('Successfully ran normalization for',32,subject))
 
 end

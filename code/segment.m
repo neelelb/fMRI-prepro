@@ -73,9 +73,11 @@ matlabbatch{1}.spm.spatial.preproc.warp.bb          = [NaN NaN NaN
 
 
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_segmentation.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_segmentation.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
+disp(strcat('Successfully ran segmentation for',32,subject))
 
 end

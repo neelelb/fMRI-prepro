@@ -28,25 +28,25 @@ clear; close all; clc
 % dir_spm directory needs to point to the 'tpm' folder in your spm12
 % folder.
 
-user = input(['Insert ''a'' if you are Alex, ''n'' if you are Neele, ' ...
-    'and ''g'' if you are a guest: '], 's');
-exp = input(['Insert ''m'' if you want to analyse the data from ' ...
-    'the SPM tutorial, insert ''h'' if you want to analyse the data from ' ...
-    'the imagery experiment. '], 's');
+user = input(['Hello! Please insert \n ''a'' if you are Alex, \n ' ...
+    '''n'' if you are Neele, or \n ''g'' if you are a Guest: '], 's');
+exp = input(['Please insert \n ''m'' if you want to analyze the MoAE ' ...
+    'data from the SPM tutorial, or \n ''h'' if you want to analyze ' ...
+    'the data from the Tactile Imagery experiment: '], 's');
 
-if user == 'a'
+if user == 'a' % Alex' Directories
     dir_analysis    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/code';
     dir_source_m    = '/Users/AlexanderLenders/Downloads/MoAEpilot 2';
     dir_source_h    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/NCM-II Homework Dataset';
     dir_spm         = '/Users/AlexanderLenders/Documents/MATLAB/spm12/tpm';
     disp('Hi Alex!')
-elseif user == 'n'
+elseif user == 'n' % Neele's Directories
     dir_analysis    = '/Users/neele/Documents/github/fMRI-prepro/code'; 
     dir_source_m    = '/Users/neele/Documents/github/fMRI-prepro/data/MoAE';
     dir_source_h    = '/Users/neele/Documents/github/fMRI-prepro/data/ccnb';
     dir_spm         = '/Applications/MATLAB_R2021b.app/toolbox/spm12/tpm';
     disp('Hi Neele!')
-elseif user == 'g'
+elseif user == 'g' % Guest's Directories
     dir_analysis    = '[fill in your path to analysis code]'; 
     dir_source_m    = '[fill in your path to MoAE data]';
     dir_source_h    = '[fill in your path to ccnb (Tactile Imagery) data]';
@@ -60,21 +60,20 @@ end
 
 cd(dir_analysis)
 
-
 %% ----- Initialise Parameters ----- %
 
 % for Tactile Imagery experiment...
 if exp == 'h'
-    % --- set correct dir_source
+    % --- Set correct dir_source
     dir_source = dir_source_h;
 
     % --- Scanning & Preprocessing Parameters
     nruns      = 6;        % number of runs
     voxel_size = 3;        % voxel size for normalisation
-    fwhm       = 6;        % ADAPT?, filter for smoothing
+    fwhm       = 6;        % filter for smoothing
     time       = 'secs';   % time unit scans or seconds
-    TR         = 2;
-    duration   = 6;
+    TR         = 2;        % Repetition Time
+    duration   = 6;        % Duration of Trials
 
     % --- Initialise Subject-IDs
     % assuming that participants folders will be named according to the
@@ -84,12 +83,11 @@ if exp == 'h'
     regex   = '\d{2}$'; % regular expression, parse for xx
     SJs     = regexp(ccnbs, regex, 'match'); % apply regex
     SJs     = strcat('sub-',string(SJs)); % convert to 'sub-*' form
-    N       = numel(SJs); % number of participants
 
     % --- Import DICOM files and create BIDS folder structure
-    % import DICOM files, convert them into .nii and create a BID format
-    % folder structure
-    for subject = 1:N
+    % import DICOM files, convert them into .nii and create a BIDS format
+    % folder structure (done only with first run and skipped after)
+    for subject = 1:numel(SJs)
         % renaming folder from 'ccnb_**xx' to 'sub-xx'
         olddir = fullfile(dir_source, ccnbs{subject});
         subdir = fullfile(dir_source, SJs{subject});
@@ -103,6 +101,7 @@ if exp == 'h'
     end
     % update SJs folder
     SJs = {dir(fullfile(dir_source, 'sub-*')).name}'; % array with sub-IDs
+    N   = numel(SJs); % number of participants
 
    
 % for MoAE experiment...
@@ -115,8 +114,8 @@ elseif exp == 'm'
     fwhm       = 6;        % filter setting for smoothing
     voxel_size = 3;        % voxel size for normalisation
     time       = 'scans';  % time unit: scans or seconds
-    TR         = 7; 
-    duration   = 6;        
+    TR         = 7;        % Repetition Time
+    duration   = 6;        % Duration of Trials
 
     % --- Initialise Subject-IDs
     % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -135,7 +134,7 @@ for subject = 1:N
     subdir = fullfile(dir_source, SJs{subject});
 
     % ---- Realignment ----- %
-    % function realigns functional images
+    % function realigns functional images for each run
     realign(subdir, nruns)
 
     % ---- Coregistration ----- %
@@ -147,12 +146,13 @@ for subject = 1:N
     segment(subdir, dir_spm)
 
     % ---- Normalise ----- %
-    % function normalizes functional (& per default anatomical) images
-    normalise(subdir, nruns, voxel_size)
+    % function normalizes each run's functional (& per default anatomical) 
+    % images with set voxel_size
+    normalize(subdir, nruns, voxel_size)
 
     % ----- Smoothing ----- %
-    % function smoothes functional images with a FWHM
-    smooth(subdir, fwhm, nruns)
+    % function smoothes functional images with set FWHM
+    smooth(subdir, fwhm)
 
 end
 
@@ -161,13 +161,15 @@ end
 
 % loops over 'subjects' in SJs and performs first level analysis
 for subject = 1:N
+    % initialise participants' subdirectory
+    subdir = fullfile(dir_source, SJs{subject});
 
-    % ----- Create conditions ----- %
+    % --- MoAE experiment
     if exp == 'm' 
         % create conditions.mat file for MoAE experiment in .../func
-        names          = {'listening'}; 
-        onsets{1,1}    = [6:12:78]; 
-        durations{1,1} = 6; 
+        names           = {'listening'}; 
+        onsets{1,1}     = [6:12:78]; 
+        durations{1,1}  = 6; 
         conditions_path = fullfile(subdir, 'func', 'conditions.mat');
         save(conditions_path, 'names', 'onsets', 'durations'); 
 
@@ -177,7 +179,8 @@ for subject = 1:N
 
         % function estimates formerly specified first level model (SPM.mat)
         est_first(subdir)
-
+    
+    % --- Tactile Imagery Experiment
     elseif exp == 'h'
        % function creates conditions.mat file for each run in ../func
        create_conditions(subdir, nruns, duration)

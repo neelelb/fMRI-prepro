@@ -63,9 +63,12 @@ matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
 
 
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_coregister.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_coregister.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
+
+disp(strcat('Successfully ran coregistration for',32,subject))
 
 end

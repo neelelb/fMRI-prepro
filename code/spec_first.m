@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% Specificy 1st level Function 
+% Specify 1st level Function 
 % ----------------------------------------------------------------------
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing
@@ -41,7 +41,7 @@ for run = 1:nruns
        filt_func = '^swr.*\.img$';
        filt_txt = '^rp.*\.txt$';
     elseif strcmp(format, 'img') == 1 && nruns ~= 1 
-       filt_func = strcat('^swr.*',sprintf('run-%02d',run));
+       filt_func = strcat('^swr.*', sprintf('run-%02d',run));
        filt_txt = strcat('^rp.*', sprintf('run-%02d',run));
     else 
     message = 'Wrong specified file format. See input arguments.'; 
@@ -91,14 +91,14 @@ for run = 1:nruns
     matlabbatch{1}.spm.stats.fmri_spec.sess(run).hpf        = 128;
 end
 
-% hard coded (independent of the run)
+% hard coded settings (independent of the run)
 matlabbatch{1}.spm.stats.fmri_spec.dir              = {dir_stats};
 matlabbatch{1}.spm.stats.fmri_spec.timing.units     = time;
 matlabbatch{1}.spm.stats.fmri_spec.timing.RT        = TR; 
 matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t    = 16;
 matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0   = 8;
-matlabbatch{1}.spm.stats.fmri_spec.fact             = struct('name',  ...
-    {}, 'levels', {});
+matlabbatch{1}.spm.stats.fmri_spec.fact             = struct('name', {}, ...
+                                                            'levels', {});
 matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = [0 0];
 matlabbatch{1}.spm.stats.fmri_spec.volt             = 1;
 matlabbatch{1}.spm.stats.fmri_spec.global           = 'None';
@@ -108,9 +108,11 @@ matlabbatch{1}.spm.stats.fmri_spec.cvi              = 'AR(1)';
 
 
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_design_matrix.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_desgin_matrix.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
+disp(strcat('Successfully specified first level model for',32,subject))
 
 end

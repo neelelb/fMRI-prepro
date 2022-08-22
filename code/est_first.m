@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% Estimate 1st level Function for MoAE dataset
+% Estimate 1st level Function
 % ----------------------------------------------------------------------
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing
@@ -11,17 +11,21 @@
 function est_first(subdir)
 
 % define stats directory of participant
-dir_stats = fullfile(subdir, 'stats');
+SPM_path = fullfile(subdir, 'stats', 'SPM.mat');
+
 
 %% ----- create matlab batch -----
-matlabbatch{1}.spm.stats.fmri_est.spmmat = {fullfile(dir_stats, 'SPM.mat')};
+matlabbatch{1}.spm.stats.fmri_est.spmmat            = {SPM_path};
 matlabbatch{1}.spm.stats.fmri_est.write_residuals   = 0;
 matlabbatch{1}.spm.stats.fmri_est.method.Classical  = 1;
 
+
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_estimate.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_estimate.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
 
+disp(strcat('Successfully estimated first level model for',32,subject))
 end

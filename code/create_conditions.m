@@ -17,7 +17,7 @@ if nargin < 3; duration = 6; end  % default duration
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');
 
-%% ----- load onset files -----
+%% ----- load onset files ----- %
 % names of the conditions
 names = {'stimulation_vibration', 'stimulation_pressure', ...
     'stimulation_flutter', 'imagination_vibration', ...
@@ -30,18 +30,18 @@ onsets = cell(1, ncond);
 durations = cell(1, ncond);
 
 % select the full filepaths of the log files 
-filt = '^log.*$'; % still adapt (dependent on the new folder structure)
+filt    = '^log.*$';
 [files] = spm_select('FPList', subdir_func, filt);
-files = cellstr(files);
+files   = cellstr(files);
 
-% create condition.mat for every run (in SPM: session)
+%% ----- create condition.mat for every run (in SPM: session) ----- %
 for run = 1:nruns 
     % specify filepath for log file of run XX
-    log_file_path = files{run, 1}; 
-    log_file = load(log_file_path); % load this log file
+    log_file_path       = files{run, 1}; 
+    log_file            = load(log_file_path); % load this log file
 
-    design_matrix = log_file.log_ExPra19.Design;
-    design_matrix(1, :) = design_matrix(1, :) ./ 1000; %tran sform to seconds
+    design_matrix       = log_file.log_ExPra19.Design;
+    design_matrix(1, :) = design_matrix(1, :) ./ 1000; %transform to seconds
     
     % specify onsets for ncond conditions 
     onsets{1, 1} = design_matrix(1, (design_matrix(3, :) == 1 & ...
@@ -65,13 +65,14 @@ for run = 1:nruns
     
     % save the conditions for run XX as 'conditions_run-XX.mat' in
     % subdir_func
-    conditions_path = fullfile(subdir_func, strcat('conditions_', ...
+    conditions_file = fullfile(subdir_func, strcat('conditions_', ...
         sprintf('run-%02d', run), '.mat'));
-    save(conditions_path, 'names', 'onsets', 'durations');
+    save(conditions_file, 'names', 'onsets', 'durations');
 
     clear onsets durations log_file design_matrix
-
 end
-disp('Successfully created condition file.')
+
+disp('Successfully created condition files.')
+
 end 
  

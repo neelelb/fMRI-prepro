@@ -10,13 +10,14 @@
 % ----------------------------------------------------------------------
 function create_contrasts(subdir)
 
-subdir_spm = fullfile(subdir, 'stats', 'SPM.mat'); 
+SPM_path = fullfile(subdir, 'stats', 'SPM.mat'); 
 
 % enter contrast names
 contrast_names = {'Stimulation > Imagery', 'Imagery > Stimulation', ...
     'Imagery Flutter > Attention', 'Attention > Stimulation'}; 
 ncontrasts = numel(contrast_names);
 
+%% ----- create contrasts ----- %
 % INDEXES regressors in design matrix (for one run)
 % 1 = Stimulation vibration 
 % 2 = Stimulation pressure 
@@ -42,10 +43,11 @@ contrast_weights{1, 3} = [0 0 1 0 0 0 -1 0 0 0 0 0 0];
 % attention > stimulation 
 contrast_weights{1, 4} = [-1 -1 -1 0 0 0 3 0 0 0 0 0 0]; 
 
+
 %% ----- create matlab batch -----
 
 for contrast = 1:ncontrasts 
-    matlabbatch{contrast}.spm.stats.con.spmmat = {subdir_spm};
+    matlabbatch{contrast}.spm.stats.con.spmmat = {SPM_path};
     matlabbatch{contrast}.spm.stats.con.consess{1}.tcon.name = ...
         contrast_names{1, contrast};
     matlabbatch{contrast}.spm.stats.con.consess{1}.tcon.weights = ...
@@ -56,12 +58,13 @@ for contrast = 1:ncontrasts
 end 
 
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_contrasts.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_contrasts.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
 
-disp('Successfully created contrast images in sub-XX/stats folder.')
+disp(strcat('Successfully created contrast images in',32,subject,'/stats folder.'))
 end 
 
 

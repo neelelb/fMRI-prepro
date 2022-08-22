@@ -70,9 +70,11 @@ matlabbatch{1}.spm.spatial.realign.estwrite.roptions.prefix     = 'r';
 
 
 %% ----- save & run batch -----
-batchname = strcat(subdir,'_realign.mat');
+subject     = string(regexp(subdir,'sub-\d{2}','match'));
+batchname   = fullfile(subdir,strcat(subject,'_realign.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
+disp(strcat('Successfully ran realignment for',32,subject))
 
 end

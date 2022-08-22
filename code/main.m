@@ -8,7 +8,11 @@
 % instructor.................Dr. Timo Torsten Schmidt
 % semester...................Summer term 2022
 
-% description: this code ...
+% description: this code is the main code for the methods project on
+% automatizing fMRI processing. It initialises parameters based on which of
+% two (given) datasets are analyzed and afterwards, calls the necessary 
+% functions for preprocessing and first-level analysis.
+
 % data experiment 'm': mother of all experiments (MoAE) data as analyzed in 
 % Ch.31 of SPM12 Manual (https://www.fil.ion.ucl.ac.uk/spm/doc/spm12_manual.pdf),
 % data experiment 'h': example fMRI data from one participant from a FU 
@@ -87,10 +91,13 @@ if exp == 'h'
         % renaming folder from 'ccnb_**xx' to 'sub-xx'
         olddir = fullfile(dir_source, ccnbs{subject});
         subdir = fullfile(dir_source, SJs{subject});
-        movefile(olddir, subdir, 'f')
 
-        % convert dicoms to nifti images & create BIDS structure
-        import_bids(subdir, SJs{subject});
+        % the reformatting to BIDS structure only has to happen once:
+        if not(isfolder(subdir)) % if 'sub-xx' does not exist already
+            movefile(olddir, subdir, 'f')
+            % convert dicoms to nifti images & create BIDS structure
+            import_bids(subdir, SJs{subject});
+        end
     end
    
 % for MoAE experiment...
@@ -133,17 +140,18 @@ for subject = 1:N
     segment(subdir, dir_spm)
 
     % ---- Normalise ----- %
-    % function normalises functional (& per default anatomical) images
+    % function normalizes functional (& per default anatomical) images
     normalise(subdir, nruns, voxel_size)
 
     % ----- Smoothing ----- %
-    % function smoothes functional images with a FWHM of 6mm
+    % function smoothes functional images with a FWHM
     smooth(subdir, fwhm, nruns)
 
 end
 
 
 %% ----- First Level Analysis For-Loop ----- %
+
 % loops over 'subjects' in SJs and performs first level analysis
 for subject = 1:N
     % ----- TEMPORARY -------------%

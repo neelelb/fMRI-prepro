@@ -4,8 +4,8 @@
 % group......................Neele Elbersgerd & Alexander Lenders
 % task.......................fMRI, automatization of data processing
 
-% 1) function: this is a workaround which imports DICOM files with SPM 12, converts 
-% the files into .nii-format and creates a BIDS folder structure. 
+% 1) function: this is a workaround which imports DICOM files with SPM 12, 
+% converts the files into .nii-format and creates a BIDS folder structure. 
 % 2) Before: dicom files of subject are floating in subdir, logfiles are in
 % parent-directory
 % 3) Input: subdir (path to one participants' data), subject (sub-xx)

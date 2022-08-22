@@ -10,11 +10,11 @@
 % ----------------------------------------------------------------------
 function spec_first_v2(subdir, nruns, TR, realign, time, format)
 
-if nargin < 2; nruns = 1; end       % default of nrun is 1
-if nargin < 3; TR = 2; end          % default of TR
-if nargin < 4; realign = 1; end     % default of including realign par
-if nargin < 5; time = 'secs'; end   % default of time format is seconds
-if nargin < 6; format = 'nii'; end  % default of format is nii
+if nargin < 2; nruns    = 1; end        % default of nrun is 1
+if nargin < 3; TR       = 2; end        % default of TR
+if nargin < 4; realign  = 1; end        % default of including realign par
+if nargin < 5; time     = 'secs'; end   % default of time format is seconds
+if nargin < 6; format   = 'nii'; end    % default of format is nii
 
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');
@@ -35,7 +35,7 @@ for run = 1:nruns
        filt_func = '^swr.*\.nii$';
        filt_txt = '^rp.*\.txt$';
     elseif strcmp(format, 'nii') == 1 && nruns ~= 1
-       filt_func = strcat('^swr.*',sprintf('run-%02d',run));
+       filt_func = strcat('^swr.*', sprintf('run-%02d',run));
        filt_txt = strcat('^rp.*', sprintf('run-%02d',run));
     elseif strcmp(format, 'img') == 1 && nruns == 1 
        filt_func = '^swr.*\.img$';

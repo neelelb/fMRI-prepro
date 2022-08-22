@@ -36,7 +36,7 @@ exp = input(['Insert ''m'' if you want to analyse the data from ' ...
 
 if user == 'a'
     dir_analysis    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/code';
-    dir_source_m    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/MoAEpilot';
+    dir_source_m    = '/Users/AlexanderLenders/Downloads/MoAEpilot 2';
     dir_source_h    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/NCM-II Homework Dataset';
     dir_spm         = '/Users/AlexanderLenders/Documents/MATLAB/spm12/tpm';
     disp('Hi Alex!')
@@ -116,7 +116,7 @@ elseif exp == 'm'
     voxel_size = 3;        % voxel size for normalisation
     time       = 'scans';  % time unit: scans or seconds
     TR         = 7; 
-    duration   = 6;        % not sure...
+    duration   = 6;        
 
     % --- Initialise Subject-IDs
     % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -173,7 +173,7 @@ for subject = 1:N
 
         % specify design matrix (SPM.mat) according to SPM 12 manual
         % instructions
-        spec_first_v2(subdir, nruns, TR, 0, time) 
+        spec_first(subdir, nruns, TR, 0, time) 
 
         % function estimates formerly specified first level model (SPM.mat)
         est_first(subdir)

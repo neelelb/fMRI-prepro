@@ -8,7 +8,7 @@
 % input: subdir (path to one participants' data in BIDS)
 % output: SPM.mat file written into participants' stats folder
 % ----------------------------------------------------------------------
-function spec_first_v2(subdir, nruns, TR, realign, time, format)
+function spec_first(subdir, nruns, TR, realign, time, format)
 
 if nargin < 2; nruns    = 1; end        % default of nrun is 1
 if nargin < 3; TR       = 2; end        % default of TR
@@ -77,7 +77,6 @@ for run = 1:nruns
         end 
     else % if realignment parameters should not be included
         disp('Realignment parameters not included in design matrix.')
-        matlabbatch{1}.spm.stats.fmri_spec.sess(run).multi_reg  = {};
     end 
 
     % include files & condition in matlab batch for each run

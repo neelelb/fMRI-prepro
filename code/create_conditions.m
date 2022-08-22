@@ -46,10 +46,10 @@ for run = 1:nruns
     % specify onsets for ncond conditions 
     onsets{1, 1} = design_matrix(1, (design_matrix(3, :) == 1 & ...
         design_matrix(4, :) == 1));
-    onsets{1, 2} = design_matrix(1, (design_matrix(3, :) == 2 & ...
-        design_matrix(4, :) == 1));
-    onsets{1, 3} = design_matrix(1, (design_matrix(3, :) == 3 & ...
-        design_matrix(4, :) == 1));
+    onsets{1, 2} = design_matrix(1, (design_matrix(3, :) == 1 & ...
+        design_matrix(4, :) == 2));
+    onsets{1, 3} = design_matrix(1, (design_matrix(3, :) == 1 & ...
+        design_matrix(4, :) == 3));
     onsets{1, 4} = design_matrix(1, (design_matrix(3, :) == 2 & ...
         design_matrix(4, :) == 1));
     onsets{1, 5} = design_matrix(1, (design_matrix(3, :) == 2 & ...
@@ -69,7 +69,7 @@ for run = 1:nruns
         sprintf('run-%02d', run), '.mat'));
     save(conditions_path, 'names', 'onsets', 'durations');
 
-    clear onsets durations
+    clear onsets durations log_file design_matrix
 
 end
 disp('Successfully created condition file.')

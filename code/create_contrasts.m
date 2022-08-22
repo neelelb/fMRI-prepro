@@ -25,7 +25,7 @@ ncontrasts = numel(contrast_names);
 % 5 = Imagery pressure 
 % 6 = Imagery flutter
 % 7 = Attention
-% 8:14 = Realignment parameters
+% 8:13 = Realignment parameters
 
 % prepare cell array
 contrast_weights = cell(1, ncontrasts);

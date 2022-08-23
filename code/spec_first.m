@@ -5,7 +5,10 @@
 % task.......................fMRI, automatization of data processing
 
 % function: creates a design matrix for 1st level stats
-% input: subdir (path to one participants' data in BIDS)
+% input: subdir (path to one participants' data in BIDS), nruns (as
+%   integer), TR (repetition time in seconds), realign (logical value for 
+%   including motion regressors or not), time (unit: scans or seconds?),
+%   format ('img' or 'nii', default is nii)
 % output: SPM.mat file written into participants' stats folder
 % ----------------------------------------------------------------------
 function spec_first(subdir, nruns, TR, realign, time, format)

@@ -69,10 +69,10 @@ if exp == 'h'
 
     % --- Scanning & Preprocessing Parameters
     nruns      = 6;        % number of runs
-    voxel_size = 3;        % voxel size for normalisation
+    voxel_size = 3;        % voxel size for normalization
     fwhm       = 6;        % filter for smoothing
     time       = 'secs';   % time unit scans or seconds
-    TR         = 2;        % Repetition Time
+    TR         = 2;        % Repetition Time in seconds
     duration   = 6;        % Duration of Trials
 
     % --- Initialise Subject-IDs
@@ -99,22 +99,22 @@ if exp == 'h'
             import_bids(subdir, SJs{subject});
         end
     end
-    % update SJs folder
-    SJs = {dir(fullfile(dir_source, 'sub-*')).name}'; % array with sub-IDs
+    % update SJs array with sub-IDs
+    SJs = {dir(fullfile(dir_source, 'sub-*')).name}';
     N   = numel(SJs); % number of participants
 
    
 % for MoAE experiment...
 elseif exp == 'm'
-    % --- set correct dir_source
+    % --- Set correct dir_source
     dir_source = dir_source_m;
 
     % --- Scanning & Preprocessing Parameters
     nruns      = 1;        % number of runs
     fwhm       = 6;        % filter setting for smoothing
-    voxel_size = 3;        % voxel size for normalisation
+    voxel_size = 3;        % voxel size for normalization
     time       = 'scans';  % time unit: scans or seconds
-    TR         = 7;        % Repetition Time
+    TR         = 7;        % Repetition Time in seconds
     duration   = 6;        % Duration of Trials
 
     % --- Initialise Subject-IDs
@@ -175,7 +175,8 @@ for subject = 1:N
 
         % specify design matrix (SPM.mat) according to SPM 12 manual
         % instructions
-        spec_first(subdir, nruns, TR, 0, time) 
+        spec_first(subdir, nruns, TR, 0, time)
+        % 0: not including motion regressors (as done in Manual)
 
         % function estimates formerly specified first level model (SPM.mat)
         est_first(subdir)
@@ -186,7 +187,8 @@ for subject = 1:N
        create_conditions(subdir, nruns, duration)
         
        % specify design matrix (SPM.mat)
-       spec_first(subdir, nruns, TR, 1, time)
+       spec_first(subdir, nruns, TR, 1, time) 
+       % 1: including motion parameters as regressors
 
        % function estimates formerly specified first level model (SPM.mat)
        est_first(subdir)

@@ -12,12 +12,16 @@
 %   or 'nii', default is nii)
 % output: normalized func files (and anat file) in participants' folder
 % ----------------------------------------------------------------------
-function normalize(subdir, nruns, voxel_size, anatomical, format)
+function normalise(subdir, nruns, voxel_size_func, voxel_size_anat, ...
+    anatomical, format)
 
-if nargin < 2; nruns = 1; end      % default of nrun is 1
-if nargin < 3; voxel_size = 3; end % default of voxel_size is 3
-if nargin < 4; anatomical = 1; end % default of anatomical is 1
-if nargin < 5; format = 'nii'; end % default of format is nii
+if nargin < 2; nruns = 1; end % default of nrun is 1
+if nargin < 3; voxel_size_func = [2, 2, 2]; end 
+% default of voxel_size_func is 2x2x2
+if nargin < 4; voxel_size_anat = [1, 1, 1]; end 
+% default of voxel_size_anat is 1x1x1
+if nargin < 5; anatomical = 1; end % default of anatomical is 1
+if nargin < 6; format = 'nii'; end % default of format is nii
 
 % define the directories (BIDS format)
 subdir_func = fullfile(subdir, 'func');
@@ -77,8 +81,7 @@ end
 % matlab normalization batch to normalize func data
 matlabbatch{1}.spm.spatial.normalise.write.woptions.bb      = [-78 -112 -70
                                                                 78 76 85];
-matlabbatch{1}.spm.spatial.normalise.write.woptions.vox     = [voxel_size ...
-    voxel_size voxel_size]; 
+matlabbatch{1}.spm.spatial.normalise.write.woptions.vox     = voxel_size_func; 
 matlabbatch{1}.spm.spatial.normalise.write.woptions.interp  = 4;
 matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix  = 'w';
 
@@ -97,7 +100,7 @@ if anatomical == 1
     matlabbatch{2}.spm.spatial.normalise.write.subj.resample    = manat;
     matlabbatch{2}.spm.spatial.normalise.write.woptions.bb      = [-78 -112 -70
                                                                     78 76 85];
-    matlabbatch{2}.spm.spatial.normalise.write.woptions.vox     = [1 1 3];
+    matlabbatch{2}.spm.spatial.normalise.write.woptions.vox     = voxel_size_anat;
     matlabbatch{2}.spm.spatial.normalise.write.woptions.interp  = 4;
     matlabbatch{2}.spm.spatial.normalise.write.woptions.prefix  = 'w';
 end 
@@ -105,10 +108,10 @@ end
 
 %% ----- save & run batch -----
 subject     = string(regexp(subdir,'sub-\d{2}','match'));
-batchname   = fullfile(subdir,strcat(subject,'_normalization.mat'));
+batchname   = fullfile(subdir,strcat(subject,'_normalisation.mat'));
 save(batchname, 'matlabbatch');
 
 spm_jobman('run', batchname);
-disp(strcat('Successfully ran normalization for',32,subject))
+disp(strcat('Successfully ran normalisation for',32,subject))
 
 end

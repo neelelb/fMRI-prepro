@@ -10,10 +10,10 @@
 
 % description: this code is the main code for the methods project on
 % automatizing fMRI processing. It initialises parameters based on which of
-% two (given) datasets are analyzed and afterwards, calls the necessary 
+% two (given) datasets are analysed and afterwards, calls the necessary 
 % functions for preprocessing and first-level analysis.
 
-% data experiment 'm': mother of all experiments (MoAE) data as analyzed in 
+% data experiment 'm': mother of all experiments (MoAE) data as analysed in 
 % Ch.31 of SPM12 Manual (https://www.fil.ion.ucl.ac.uk/spm/doc/spm12_manual.pdf),
 % data experiment 'h': example fMRI data from one participant from a FU 
 % study about Tactile Imagery (data not publicly available)
@@ -30,14 +30,14 @@ clear; close all; clc
 
 user = input(['Hello! Please insert \n ''a'' if you are Alex, \n ' ...
     '''n'' if you are Neele, or \n ''g'' if you are a Guest: '], 's');
-exp = input(['Please insert \n ''m'' if you want to analyze the MoAE ' ...
-    'data from the SPM tutorial, or \n ''h'' if you want to analyze ' ...
+exp = input(['Please insert \n ''m'' if you want to analyse the MoAE ' ...
+    'data from the SPM tutorial, or \n ''h'' if you want to analyse ' ...
     'the data from the Tactile Imagery experiment: '], 's');
 
 if user == 'a' % Alex' Directories
     dir_analysis    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/code';
-    dir_source_m    = '/Users/AlexanderLenders/Downloads/MoAEpilot 2';
-    dir_source_h    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/NCM-II Homework Dataset';
+    dir_source_m    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/MoAEpilot';
+    dir_source_h    = '/Users/AlexanderLenders/GitHub/fMRI-prepro/data/ccnb';
     dir_spm         = '/Users/AlexanderLenders/Documents/MATLAB/spm12/tpm';
     disp('Hi Alex!')
 elseif user == 'n' % Neele's Directories
@@ -68,12 +68,13 @@ if exp == 'h'
     dir_source = dir_source_h;
 
     % --- Scanning & Preprocessing Parameters
-    nruns      = 6;        % number of runs
-    voxel_size = 3;        % voxel size for normalization
-    fwhm       = 6;        % filter for smoothing
-    time       = 'secs';   % time unit scans or seconds
-    TR         = 2;        % Repetition Time in seconds
-    duration   = 6;        % Duration of Trials
+    nruns           = 6;         % number of runs
+    voxel_size_func = [2, 2, 2]; % voxel size for normalisation (functional)
+    voxel_size_anat = [1, 1, 1]; % voxel size for normalisation (anatomical)
+    fwhm            = 6;         % filter for smoothing
+    time            = 'secs';    % time unit in seconds
+    TR              = 2;         % repetition time in seconds
+    duration        = 6;         % duration of trials in seconds
 
     % --- Initialise Subject-IDs
     % assuming that participants folders will be named according to the
@@ -110,12 +111,13 @@ elseif exp == 'm'
     dir_source = dir_source_m;
 
     % --- Scanning & Preprocessing Parameters
-    nruns      = 1;        % number of runs
-    fwhm       = 6;        % filter setting for smoothing
-    voxel_size = 3;        % voxel size for normalization
-    time       = 'scans';  % time unit: scans or seconds
-    TR         = 7;        % Repetition Time in seconds
-    duration   = 6;        % Duration of Trials
+    nruns           = 1;         % number of runs
+    fwhm            = 6;         % filter setting for smoothing
+    voxel_size_func = [3, 3, 3]; % voxel size for normalisation (functional)
+    voxel_size_anat = [1, 1, 3]; % voxel size for normalisation (anatomical)
+    time            = 'scans';   % time unit: scans 
+    TR              = 7;         % repetition time in seconds
+    duration        = 6;         % duration of trials in seconds
 
     % --- Initialise Subject-IDs
     % find all 'sub-*' folders in data source folder. Extract 'sub-*' 
@@ -148,7 +150,7 @@ for subject = 1:N
     % ---- Normalise ----- %
     % function normalizes each run's functional (& per default anatomical) 
     % images with set voxel_size
-    normalize(subdir, nruns, voxel_size)
+    normalise(subdir, nruns, voxel_size_func, voxel_size_anat)
 
     % ----- Smoothing ----- %
     % function smoothes functional images with set FWHM

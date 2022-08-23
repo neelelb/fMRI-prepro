@@ -72,7 +72,8 @@ for run = 1:nruns
     clear onsets durations log_file design_matrix
 end
 
-disp('Successfully created condition files.')
+subject = string(regexp(subdir,'sub-\d{2}','match'));
+disp(strcat('Successfully created condition-file for',32,subject))
 
 end 
  

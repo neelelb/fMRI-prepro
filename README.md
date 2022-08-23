@@ -30,13 +30,13 @@ The Preprocessing consists of the following functions:
 1. ```realign.m```: realigns functional images for each run
 2. ```coreg.m```: coregisters functional and anatomical images
 3. ```segment.m```: segments T1w image of participant using SPM's tissue priors
-4. ```normalize.m```: normalizes each run's functional (& per default anatomical) images
+4. ```normalise.m```: normalizes each run's functional (& per default anatomical) images
 5. ```smooth.m```:  smoothes functional images
 
 The First-Level Analysis consists of the following functions:
 
 1. ```create_conditions.m```: This is only used and specifically coded for the Tactile Imagery Experiment. Since MoAE is lower in complexity, the conditions file is created in ```main.m``` directly 
-2. ```spec_first.m```: specifies the design matrix (SPM.mat) using the conditions file and (if needed) using the motion regressors from realignment preprocessing step
+2. ```spec_first.m```: specifies the design matrix (SPM.mat) using the conditions file and (if desired) using the motion regressors from realignment preprocessing step
 3. ```est_first.m```: estimates the specified first level design
 4. ```create_contrasts.m```: This is also used specifically for Tactile Imagery, since the MoAE did not require it. It creates the contrasts using SPM12 that can be assessed later
 

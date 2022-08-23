@@ -62,9 +62,9 @@ subject     = string(regexp(subdir,'sub-\d{2}','match'));
 batchname   = fullfile(subdir,strcat(subject,'_contrasts.mat'));
 save(batchname, 'matlabbatch');
 
-spm_jobman('run', batchname);
+spm_jobman('run', char(batchname));
 
-disp(strcat('Successfully created contrast images in',32,subject,'/stats folder.'))
+disp(strcat('Successfully created contrast images in',{32},subject,'/stats folder.'))
 end 
 
 

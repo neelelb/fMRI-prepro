@@ -156,7 +156,7 @@ spm_jobman('run', matlabbatch);
 
 % 4) Delete the temporary folder
     rmdir(tmp_nii, 's');
-    disp(strcat('Succesfully imported to BIDS for', 32, subject)) 
+    disp(strcat('Succesfully imported to BIDS for', {32}, subject)) 
 
 end
 

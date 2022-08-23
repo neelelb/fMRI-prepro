@@ -115,7 +115,7 @@ subject     = string(regexp(subdir,'sub-\d{2}','match'));
 batchname   = fullfile(subdir,strcat(subject,'_desgin_matrix.mat'));
 save(batchname, 'matlabbatch');
 
-spm_jobman('run', batchname);
-disp(strcat('Successfully specified first level model for',32,subject))
+spm_jobman('run', char(batchname));
+disp(strcat('Successfully specified first level model for',{32},subject))
 
 end

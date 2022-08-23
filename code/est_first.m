@@ -25,7 +25,7 @@ subject     = string(regexp(subdir,'sub-\d{2}','match'));
 batchname   = fullfile(subdir,strcat(subject,'_estimate.mat'));
 save(batchname, 'matlabbatch');
 
-spm_jobman('run', batchname);
+spm_jobman('run', char(batchname));
 
-disp(strcat('Successfully estimated first level model for',32,subject))
+disp(strcat('Successfully estimated first level model for',{32},subject))
 end

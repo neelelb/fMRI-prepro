@@ -29,13 +29,13 @@ for run = 1:nruns
         if nruns == 1
             filt = '^.*\.nii$';
         else 
-            filt = strcat('^*',sprintf('run-%02d',run),'.*');
+            filt = strcat('^.*',sprintf('run-%02d',run),'.*');
         end
     elseif strcmp(format, 'img') == 1 
         if nruns == 1
             filt = '^.*\.img$';
         else
-            filt = strcat('^*',sprintf('run-%02d',run),'.*');
+            filt = strcat('^.*',sprintf('run-%02d',run),'.*');
         end
     else 
         message = 'Wrong specified file format. See input arguments.'; 
@@ -74,7 +74,7 @@ subject     = string(regexp(subdir,'sub-\d{2}','match'));
 batchname   = fullfile(subdir,strcat(subject,'_realign.mat'));
 save(batchname, 'matlabbatch');
 
-spm_jobman('run', batchname);
-disp(strcat('Successfully ran realignment for',32,subject))
+spm_jobman('run', char(batchname));
+disp(strcat('Successfully ran realignment for',{32},subject))
 
 end

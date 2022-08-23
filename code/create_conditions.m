@@ -73,7 +73,7 @@ for run = 1:nruns
 end
 
 subject = string(regexp(subdir,'sub-\d{2}','match'));
-disp(strcat('Successfully created condition-file for',32,subject))
+disp(strcat('Successfully created condition-file for',{32},subject))
 
 end 
  

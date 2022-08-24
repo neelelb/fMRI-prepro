@@ -15,7 +15,7 @@
 %       while accounting for different runs and merging func files to 4D
 %       nii images.
 %   4.3) moves the log files lying in parent-dir to subdir/func
-%   Note: no .json files are created.
+%   Note: no .json files are created. Localizer dicoms are not converted
 % ----------------------------------------------------------------------
 function import_bids(subdir, subject) 
 

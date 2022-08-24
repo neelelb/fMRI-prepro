@@ -38,7 +38,7 @@ contrast_weights{1, 1} = [1 1 1 -1 -1 -1 0 0 0 0 0 0 0];
 contrast_weights{1, 2} = [-1 -1 -1 1 1 1 0 0 0 0 0 0 0]; 
 
 % imagery flutter > attention
-contrast_weights{1, 3} = [0 0 1 0 0 0 -1 0 0 0 0 0 0]; 
+contrast_weights{1, 3} = [0 0 0 0 0 1 -1 0 0 0 0 0 0]; 
 
 % attention > stimulation 
 contrast_weights{1, 4} = [-1 -1 -1 0 0 0 3 0 0 0 0 0 0]; 
